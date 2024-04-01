@@ -1,0 +1,9 @@
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/obj3DLib.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/GLUILib.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/modelosBelkanLib.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/comportamientosLib.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/motorLib.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/practica2.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/practica2SG.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/edit_cache.dir
+/home/fgr/SoftwarePropio/GifHub_Versions/Cuenta_ugr-ccia-IA/practica2/CMakeFiles/rebuild_cache.dir
