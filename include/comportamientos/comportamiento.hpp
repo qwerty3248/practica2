@@ -33,9 +33,10 @@ struct Sensores {
   Action ActionSent;
   double tiempo;
   vector< unsigned char> terreno;
-  vector< unsigned char> superficie;
+  vector< unsigned char> agentes;
   int destinoF;
   int destinoC;
+  bool CLBgoal;
 };
 
 

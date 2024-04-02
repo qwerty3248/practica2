@@ -22,7 +22,7 @@ Action ComportamientoAldeano::think(Sensores sensores) {
   case 3:
   case 4: accion = actTURN_SR; break;
 	default: 
-		if (sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M' and sensores.superficie[2] == '_') accion = actWALK;
+		if (sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M' and sensores.agentes[2] == '_') accion = actWALK;
     else accion = actTURN_SR;
 		break;
   }

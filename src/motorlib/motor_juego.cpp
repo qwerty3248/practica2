@@ -437,6 +437,11 @@ bool actuacionNPC(unsigned int entidad, unsigned char celda, Action accion, unsi
             monitor.get_entidad(0)->anularAlcanzados();
             monitor.get_entidad(0)->incrMisiones();
             monitor.get_entidad(0)->incrPuntuacion(10);
+            monitor.get_entidad(1)->SetActionSent(act_CLB_STOP);
+            monitor.get_entidad(1)->setLastAction(act_CLB_STOP);     
+            monitor.get_entidad(0)->SetLlegoOn();
+            monitor.get_entidad(1)->SetLlegoOn();
+
             for (unsigned int i = 0; i < monitor.numero_entidades(); i++)
             {
               monitor.get_entidad(i)->setObjetivos(monitor.get_active_objetivos());
@@ -704,9 +709,9 @@ void nucleo_motor_juego(MonitorJuego &monitor, int acc)
     accion = monitor.get_entidad(i)->think(-1, estado[i], monitor.getLevel());
     clock_t t1 = clock();
 
+
     monitor.get_entidad(i)->addTiempo(t1 - t0);
     monitor.get_entidad(i)->setLastAction(accion);
-
     actuacion(i, accion);
   }
 

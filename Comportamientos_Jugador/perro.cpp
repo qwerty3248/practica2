@@ -105,7 +105,7 @@ Action ComportamientoPerro::think(Sensores sensores)
   }
   else if ((esta_en_casilla_objetivo or sensores.terreno[0] == 'X') and
            (sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M') and
-           (sensores.superficie[2] == '_'))
+           (sensores.agentes[2] == '_'))
   {
     accion = actWALK;
   }
@@ -117,34 +117,34 @@ Action ComportamientoPerro::think(Sensores sensores)
   {
     bool delanteEsCasillaObjetivo = EsDelanteObjetivo(sensores);
 
-    if (sensores.superficie[2] == 'j' and sensores.terreno[2] != 'X')
+    if (sensores.agentes[2] == 'j' and sensores.terreno[2] != 'X')
     {
       accion = actWHEREIS;
     }
-    else if (sensores.superficie[2] == 'j' and sensores.terreno[2] == 'X')
+    else if (sensores.agentes[2] == 'j' and sensores.terreno[2] == 'X')
     {
       accion = actTURN_SR;
     }
-    else if (sensores.superficie[2] == 'l')
+    else if (sensores.agentes[2] == 'l')
     {
       accion = actTURN_L;
     }
-    else if (!delanteEsCasillaObjetivo and sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M' and sensores.superficie[2] == '_')
+    else if (!delanteEsCasillaObjetivo and sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M' and sensores.agentes[2] == '_')
     {
-      if (sensores.superficie[6] == 'j' or sensores.superficie[12] == 'j')
+      if (sensores.agentes[6] == 'j' or sensores.agentes[12] == 'j')
       {
         accion = actWALK;
       }
-      else if (sensores.superficie[10] == 'j' or sensores.superficie[11] == 'j' or sensores.superficie[13] == 'j' or sensores.superficie[14] == 'j')
+      else if (sensores.agentes[10] == 'j' or sensores.agentes[11] == 'j' or sensores.agentes[13] == 'j' or sensores.agentes[14] == 'j')
       {
         accion = actWALK;
       }
     }
-    else if (sensores.superficie[1] == 'j' or sensores.superficie[4] == 'j' or sensores.superficie[9] == 'j')
+    else if (sensores.agentes[1] == 'j' or sensores.agentes[4] == 'j' or sensores.agentes[9] == 'j')
     {
       accion = actTURN_L;
     }
-    else if (sensores.superficie[3] == 'j' or sensores.superficie[8] == 'j' or sensores.superficie[15] == 'j')
+    else if (sensores.agentes[3] == 'j' or sensores.agentes[8] == 'j' or sensores.agentes[15] == 'j')
     {
       accion = actTURN_SR;
     }
@@ -166,7 +166,7 @@ Action ComportamientoPerro::think(Sensores sensores)
         accion = actTURN_SR;
         break;
       default:
-        if (!delanteEsCasillaObjetivo and sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M' and sensores.superficie[2] == '_')
+        if (!delanteEsCasillaObjetivo and sensores.terreno[2] != 'P' and sensores.terreno[2] != 'M' and sensores.agentes[2] == '_')
           accion = actWALK;
         else
           accion = actTURN_SR;

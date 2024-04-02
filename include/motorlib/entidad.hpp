@@ -84,6 +84,9 @@ private:
 
   Action ActionSent;
 
+  // Indica si llego a la casilla objetivo
+  bool llegoObjetivo;
+
 public:
   Entidad(Tipo paramTipo, SubTipo paramSubTipo, Orientacion paramOrient, unsigned int paramF, unsigned int paramC, Objeto3D *mod, Comportamiento *comp, int numberdest, vector<unsigned int> CasillasObjetivo, int v)
   {
@@ -101,6 +104,7 @@ public:
     vida = v;
     completoLosObjetivos = false;
     ActionSent = act_CLB_STOP;
+    llegoObjetivo = false;
   }
 
   ~Entidad()
@@ -173,7 +177,7 @@ public:
   void setCompletoLosObjetivos() { completoLosObjetivos = true; }
   bool SeHanConseguidoLosObjetivos() { return completoLosObjetivos; }
 
-  void setLastAction(Action accion) { last_action = accion; }
+  void setLastAction(Action accion) {last_action = accion; }
   Action getLastAction() {return last_action; }
 
   vector<vector<unsigned char>> getMapaResultado() { return comportamiento->getMapaResultado(); }
@@ -256,5 +260,9 @@ public:
   int get_Nivel() { return nivel; }
 
   void SetColaborador (Entidad *x) {EntidadColaborador = x;}
+
+  void SetLlegoOff(){llegoObjetivo = false;}
+  void SetLlegoOn(){llegoObjetivo = true;}
+  bool GetLlego(){return llegoObjetivo;}
 };
 #endif

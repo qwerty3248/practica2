@@ -130,10 +130,15 @@ Action Entidad::think(int acc, vector<vector<unsigned char>> vision, int level)
     sensor.colision = colision;
     sensor.reset = reset;
 
+    sensor.CLBgoal = GetLlego();
+    SetLlegoOff();
+
     if (tipo == jugador)
     {
       if (EntidadColaborador->f == destino[0] and EntidadColaborador->c == destino[1] and (level == 1 or level == 3 or level == 4))
       {
+        cout << "Mision alcanzada por el colaborador!" << endl;
+
         if (level != 4)
         {
           done = true;
@@ -144,7 +149,6 @@ Action Entidad::think(int acc, vector<vector<unsigned char>> vision, int level)
           misiones += 4;
           completoLosObjetivos = false;
         }
-        cout << "Mision alcanzada por el sonámbulo!" << endl;
       }
       else if (f == destino[0] and c == destino[1] and (level == 0 or level == 2 or level == 4))
       {
@@ -179,10 +183,11 @@ Action Entidad::think(int acc, vector<vector<unsigned char>> vision, int level)
 
     if (subtipo == colaborador)
     {
+
       // Poner en el sensor ActionSent lo que alguno de los otros agentes haya ordenado al colaborador
       sensor.ActionSent = GetActionSent();
-      //cout <<  "Acción enviada: " << sensor.ActionSent << endl;
-      //SetActionSent(act_CLB_STOP);
+      // cout <<  "Acción enviada: " << sensor.ActionSent << endl;
+      // SetActionSent(act_CLB_STOP);
     }
 
     activ = false;
@@ -218,7 +223,7 @@ Action Entidad::think(int acc, vector<vector<unsigned char>> vision, int level)
       sensor.destinoC = destino[1];
     }
 
-    sensor.superficie = vision[1];
+    sensor.agentes = vision[1];
     sensor.terreno = vision[0];
 
     sensor.tiempo = getTiempo() / CLOCKS_PER_SEC;
@@ -353,7 +358,7 @@ int Entidad::fixBateria_sig_accion_jugador(unsigned char celdaJugador, Action ac
       bateria_sig_accion = 1;
       break;
     } // Fin switch celdaColaborador
-    break;    
+    break;
   case actTURN_L:
     switch (celdaJugador)
     {
@@ -377,7 +382,7 @@ int Entidad::fixBateria_sig_accion_jugador(unsigned char celdaJugador, Action ac
       break;
     } // Fin switch celdaJugador
     break;
-  //case actTURN_SL:
+  // case actTURN_SL:
   case actTURN_SR:
     switch (celdaJugador)
     {
@@ -409,13 +414,11 @@ int Entidad::fixBateria_sig_accion_jugador(unsigned char celdaJugador, Action ac
     break;
 
   default:
-      bateria_sig_accion = 1;
-      break;
+    bateria_sig_accion = 1;
+    break;
   }
   return bateria_sig_accion;
 }
-
-
 
 int Entidad::fixBateria_sig_accion_colaborador(unsigned char celdaColaborador, Action accion)
 {
@@ -469,13 +472,11 @@ int Entidad::fixBateria_sig_accion_colaborador(unsigned char celdaColaborador, A
     break;
 
   default:
-      bateria_sig_accion_clb = 1;
-      break;
+    bateria_sig_accion_clb = 1;
+    break;
   }
   return bateria_sig_accion_clb;
 }
-
-
 
 void Entidad::decBateria_sig_accion()
 {
