@@ -440,14 +440,45 @@ void Mapa::drawMM2(vector<unsigned int> objetivosActivos /*int f, int c*/)
         glEnd();*/
 
         // glColor3f(0.0,1.0,1.0);
-        if (mapaConPlan[j][i] ==1 ) colorCeldaOpuestoMM(mapaCompleto[j][i]);
-        else colorCeldaOpuestoMM2(mapaCompleto[j][i]);
-        glBegin(GL_QUADS);
-        glVertex3f(0.0, -0.3, 0.0);
-        glVertex3f(-0.3, 0.0, 0.0);
-        glVertex3f(0.0, 0.3, 0.0);
-        glVertex3f(0.3, 0.0, 0.0);
-        glEnd();
+        if (mapaConPlan[j][i] == 1  or mapaConPlan[j][i] == 2){
+          if (mapaConPlan[j][i] == 1) colorCeldaOpuestoMM(mapaCompleto[j][i]);
+          else colorCeldaOpuestoMM2(mapaCompleto[j][i]);
+
+          glBegin(GL_QUADS);
+          glVertex3f(0.0, -0.3, 0.0);
+          glVertex3f(-0.3, 0.0, 0.0);
+          glVertex3f(0.0, 0.3, 0.0);
+          glVertex3f(0.3, 0.0, 0.0);
+          glEnd();
+        } 
+        if (mapaConPlan[j][i] == 3){
+          colorCeldaOpuestoMM(mapaCompleto[j][i]);
+          glBegin(GL_TRIANGLES);
+          glVertex3f(-0.10f, 0.0f, 0.0);
+          glVertex3f(0.10f, 0.0f, 0.0);
+          glVertex3f(0.0f, 0.20f, 0.0);
+
+          glVertex3f(-0.10f,0.0f, 0.0);
+          glVertex3f(-0.30f,-0.10f, 0.0);
+          glVertex3f(-0.10f,-0.20f, 0.0);
+
+          glVertex3f(-0.10f,-0.20f, 0.0);
+          glVertex3f(0.0f, -0.40f, 0.0);
+          glVertex3f(0.10f, -0.20f, 0.0);
+
+          glVertex3f(0.10f, -0.20f, 0.0);
+          glVertex3f(0.30f, -0.10f, 0.0);
+          glVertex3f(0.10f, 0.0f, 0.0);
+
+          glVertex3f(-0.10f, 0.0f, 0.0);
+          glVertex3f(-0.10f,-0.20f, 0.0);
+          glVertex3f(0.10f, 0.0f, 0.0);
+
+          glVertex3f(-0.10f,-0.20f, 0.0);
+          glVertex3f(0.10f, -0.20f, 0.0);
+          glVertex3f(0.10f, 0.0f, 0.0);
+          glEnd();
+        }
       }
 
       glPopMatrix();
