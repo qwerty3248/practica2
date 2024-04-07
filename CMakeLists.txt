@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(Motor_Grafico_Belkan)
 
+# problema deteccion librerias glut - mgo -------
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/lib/x86_64-linux-gnu -lglut")
+set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/libglut")
+
 #########################################################
 # FIND GLUT
 #########################################################
@@ -79,7 +83,7 @@ add_library(comportamientosLib ${SOURCES_COMPORTAMIENTOS})
 target_link_libraries(comportamientosLib ${OPENMP_LIBRARIES} "-lpthread")
 
 add_library(motorLib ${SOURCES_LIBMOTOR})
-target_link_libraries(motorLib obj3DLib GLUILib comportamientosLib ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${OPENMP_LIBRARIES} "-lpthread")
+target_link_libraries(motorLib obj3DLib GLUILib comportamientosLib OpenGL::GL GLUT::GLUT ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${OPENMP_LIBRARIES} "-lpthread")
 
 add_executable(practica2 "bin_src/juego.cc" ${SOURCES})
 target_link_libraries(practica2 obj3DLib motorLib modelosBelkanLib ${OPENMP_LIBRARIES} "-lpthread")
