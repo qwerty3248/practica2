@@ -576,7 +576,122 @@ void ComportamientoJugador::VisualizaPlan(const ubicacion & jugador, const ubica
 		it++;
 	 }
 }
+list<nodeN2>::iterator esta (list <nodeN2> & l, const nodeN2 & n){
+	auto it = l.begin();
+	bool fin = false;
+	while(it != l.end() && !fin){
+		if((*it).st == n.st){
+			fin = true;
+		}
+		else
+			++it;
+		}
+	return it;
+}
+void insertar (list<nodeN2> & l, nodeN2 & n){
+	auto it = l.begin();
+	bool encontrado = false;
+	auto fin = l.rbegin();
+	if((*fin).st.coste <= n.st.coste)
+		l.push_back(n);
+	else{
+		while(it != l.end() && !encontrado){
+			if((*it).st.coste >= n.st.coste)
+				encontrado = true;
+			else
+				++it;
+			}
+			if(encontrado)
+				l.insert(it,n);
+			else
+				l.push_back(n);
+	}
+} 
 
+stateN2 applyN2(const Action & a, const stateN2 & st, const vector<vector<unsigned char>> & mapa){
+	stateN2 st_result = st;
+	ubicacion sig_ubicacion;
+	char tipo = mapa[st.jugador.f][st.jugador.c];//donde está antes del movimiento
+	switch (a)
+	{
+	case actWALK:
+		sig_ubicacion = NextCasilla(st.jugador);
+		if(casillaTransitable(sig_ubicacion,mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c)){
+			if(tipo == 'A'){
+				if(!st.bikini)
+					st_result.coste += 100;
+				else
+					st_result.coste += 10;
+			}
+			else if(tipo == 'B'){
+				if(!st.zapatillas)
+					st_result.coste += 50;
+				else
+					st_result.coste += 15;
+			}
+			else if(tipo == 'T'){
+				st_result.coste += 2;
+			}
+			else{
+				st_result.coste += 1;
+			}
+			//ver si ha pasado a una casilla bikini o de zapas
+			char siguiente_tipo = mapa[st_result.jugador.f][st_result.jugador.c];
+			if(siguiente_tipo == 'K'){
+				st_result.bikini = true;
+				st_result.zapatillas = false;
+			}
+			else if(siguiente_tipo == 'D'){
+
+				st_result.bikini = false;
+				st_result.zapatillas = true;
+			}
+
+			st_result.jugador = sig_ubicacion;
+			}
+		break;
+	case actTURN_L:
+		if(tipo == 'A'){
+			if(!st.bikini)
+				st_result.coste += 25;
+			else
+				st_result.coste += 5;
+		}else if(tipo == 'B'){
+				if(!st.zapatillas)
+					st_result.coste += 5;
+				else
+					st_result.coste += 1;
+		}else if(tipo == 'T'){
+				st_result.coste += 2;
+			}
+			else{
+				st_result.coste += 1;
+			}
+		st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 6) % 8);
+		break;
+
+	case actTURN_SR:
+		
+		if(tipo == 'A'){
+			if(!st.bikini)
+				st_result.coste += 25;
+			else
+				st_result.coste += 5;
+		}else if(tipo == 'B'){
+				if(!st.zapatillas)
+					st_result.coste += 5;
+				else
+					st_result.coste += 1;
+		}else if(tipo == 'T'){
+				st_result.coste += 2;
+			}
+			else{
+				st_result.coste += 1;
+			}
+		st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula+1)%8);
+		break;
+	}
+}
 list <Action> AnchuraSoloJugador_V3(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa){
 	nodeN0 current_node;
 	list<nodeN0> frontier;
@@ -753,6 +868,93 @@ list<Action> AnchuraN1(const stateN1 & inicio, const ubicacion & final,const vec
 	return plan;
 }	
 
+list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, const vector<vector<unsigned char>> & mapa){
+	list<nodeN2> frontier;
+	nodeN2 current_node;
+	set<nodeN2> explored;
+	list<Action> plan;
+	current_node.st = inicio;
+	bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
+	frontier.push_front(current_node);	
+	//Queda rellenar
+	while (!frontier.empty() && !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
+
+		nodeN2 child_walk = current_node;
+		child_walk.st = applyN2(actWALK,current_node.st,mapa);
+
+		if (!frontier.empty()){
+			auto itf = esta(frontier,child_walk);
+			if ((explored.find(child_walk) == explored.end()) && (itf == frontier.end())){
+				child_walk.secuencia.push_back(actWALK);
+				insertar(frontier,child_walk);
+			}else if ((itf != frontier.end()) && (itf->st.coste > child_walk.st.coste)){
+				child_walk.secuencia.push_back(actWALK);
+				frontier.erase(itf);
+				insertar(frontier,child_walk);
+			}
+		}else if (explored.find(child_walk) == explored.end()){
+				child_walk.secuencia.push_back(actWALK);
+				frontier.push_back(child_walk);
+			}
+		nodeN2 child_turnl = current_node;
+		child_turnl.st = applyN2(actTURN_L,current_node.st,mapa);
+
+		if (!frontier.empty()){
+			auto itf = esta(frontier,child_turnl);
+			if ((explored.find(child_turnl) == explored.end()) && (itf == frontier.end())){
+				child_turnl.secuencia.push_back(actTURN_L);
+				insertar(frontier,child_turnl);
+			}else if ((itf != frontier.end()) && (itf->st.coste > child_turnl.st.coste)){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.erase(itf);
+				insertar(frontier,child_turnl);
+			}
+		}else if (explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.push_back(child_turnl);
+		}		
+
+		nodeN2 child_turnsr = current_node;
+		child_turnsr.st = applyN2(act_CLB_TURN_SR,current_node.st,mapa);
+
+		if (!frontier.empty()){
+			auto itf = esta(frontier,child_turnsr);
+			if ((explored.find(child_turnsr) == explored.end()) && (itf == frontier.end())){
+				child_turnsr.secuencia.push_back(actTURN_SR);
+				insertar(frontier,child_turnsr);
+			}else if ((itf != frontier.end()) && (itf->st.coste > child_turnsr.st.coste)){
+				child_turnsr.secuencia.push_back(actTURN_SR);
+				frontier.erase(itf);
+				insertar(frontier,child_turnsr);
+			}
+		}else if (explored.find(child_turnsr) == explored.end()){
+				child_turnsr.secuencia.push_back(actTURN_SR);
+				frontier.push_back(child_turnsr);
+		}
+
+		if (!frontier.empty()){
+			current_node = frontier.front();
+		}
+		if (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c){
+			SolutionFound = true;
+		}
+	}
+	if (SolutionFound){
+		plan = current_node.secuencia;
+	}
+	return plan;
+
+
+
+}
+
+
+pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_sonambulo, const ubicacion & final){
+	//Madre mia haber como saco la heuristica
+}		
+
 // Este es el método principal que se piden en la practica.
 // Tiene como entrada la información de los sensores y devuelve la acción a realizar.
 // Para ver los distintos sensores mirar fichero "comportamiento.hpp"
@@ -785,6 +987,25 @@ Action ComportamientoJugador::think(Sensores sensores){
 					plan = AnchuraN1(c_stateN1,goal,mapaResultado);
 					break;
 				case 2:
+					c_stateN2.jugador = ubicacion_juga;
+					c_stateN2.colaborador = ubicacion_cola;
+					c_stateN2.coste = 0;
+
+					if (tipo_juga == 'K'){
+						c_stateN2.bikini = true;
+					}else {
+						c_stateN2.bikini = false;
+					}
+
+					if (tipo_juga == 'D'){
+						c_stateN2.zapatillas = true;
+
+					}else
+					{
+						c_stateN2.zapatillas=false;
+					}
+					plan = CosteUniforme(c_stateN2,goal,mapaResultado);
+					
 					break;
 				case 3:
 					break;
