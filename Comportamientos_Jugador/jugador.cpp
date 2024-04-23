@@ -346,10 +346,11 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 			st_result.colaborador.brujula = static_cast<Orientacion>((st_result.colaborador.brujula + 1) % 8);
 		break;
 		case act_CLB_STOP:
-		//No se hace nada
+		//No se hace nada ?
 		break;
 		
 	}
+	return st_result;
 }
 stateN0 applyN0(const Action &a, const stateN0 &st, const vector<vector<unsigned char>> mapa){
 	stateN0 st_result = st;
@@ -582,10 +583,10 @@ list<nodeN2>::iterator esta (list <nodeN2> & l, const nodeN2 & n){
 	while(it != l.end() && !fin){
 		if((*it).st == n.st){
 			fin = true;
-		}
-		else
+		}else{
 			++it;
-		}
+		}	
+	}
 	return it;
 }
 void insertar (list<nodeN2> & l, nodeN2 & n){
@@ -596,15 +597,17 @@ void insertar (list<nodeN2> & l, nodeN2 & n){
 		l.push_back(n);
 	else{
 		while(it != l.end() && !encontrado){
-			if((*it).st.coste >= n.st.coste)
+			if((*it).st.coste >= n.st.coste){
 				encontrado = true;
-			else
+			}else{
 				++it;
-			}
-			if(encontrado)
-				l.insert(it,n);
-			else
-				l.push_back(n);
+			}	
+		}
+		if(encontrado){
+			l.insert(it,n);
+		}else{
+			l.push_back(n);
+		}	
 	}
 } 
 
@@ -678,10 +681,11 @@ stateN2 applyN2(const Action & a, const stateN2 & st, const vector<vector<unsign
 			else
 				st_result.coste += 5;
 		}else if(tipo == 'B'){
-				if(!st.zapatillas)
+				if(!st.zapatillas){
 					st_result.coste += 5;
-				else
+				}else{
 					st_result.coste += 1;
+				}	
 		}else if(tipo == 'T'){
 				st_result.coste += 2;
 			}
@@ -769,7 +773,7 @@ list<Action> AnchuraN1(const stateN1 & inicio, const ubicacion & final,const vec
 	set<nodeN1> explored;
 	list<Action> plan;
 	current_node.st = inicio;
-	bool SolutionFound = (current_node.st.jugador.f == final.f and current_node.st.jugador.c == final.c);
+	bool SolutionFound = (current_node.st.colaborador.f == final.f and current_node.st.colaborador.c == final.c);
 	frontier.push_back(current_node);
 	int nivel = 0;
 
@@ -779,74 +783,65 @@ list<Action> AnchuraN1(const stateN1 & inicio, const ubicacion & final,const vec
 		
 		if (jugadorVeColaborador(current_node.st.jugador,current_node.st.colaborador)){
 
-			nodeN1 child_s_forward = current_node;
-			child_s_forward.st = applyN1(act_CLB_WALK,current_node.st,mapa);
-			if(child_s_forward.st.colaborador.f == final.f && child_s_forward.st.colaborador.c == final.c){
-				child_s_forward.secuencia.push_back(act_CLB_WALK);
-				current_node = child_s_forward;
+			nodeN1 child_clb_walk = current_node;
+			child_clb_walk.st = applyN1(act_CLB_WALK,current_node.st,mapa);
+			if (child_clb_walk.st.colaborador.f == final.f and child_clb_walk.st.colaborador.c == final.c){
+				child_clb_walk.secuencia.push_back(act_CLB_WALK);
+				current_node = child_clb_walk;
 				SolutionFound = true;
-			}else if(explored.find(child_s_forward) == explored.end()){
-				child_s_forward.secuencia.push_back(act_CLB_WALK);
-				frontier.push_back(child_s_forward);
+			}else if (explored.find(child_clb_walk) == explored.end()){
+				child_clb_walk.secuencia.push_back(act_CLB_WALK);
+				frontier.push_back(child_clb_walk);
+			}
+			if (!SolutionFound){
+				nodeN1 child_turnr2 = current_node;
+				child_turnr2.st = applyN1(act_CLB_TURN_SR,current_node.st,mapa);
+				if (explored.find(child_turnr2) == explored.end()){
+					child_turnr2.secuencia.push_back(act_CLB_TURN_SR);
+					frontier.push_back(child_turnr2);
+				}
+
+				nodeN1 child_t = current_node;
+				child_t.st = applyN1(act_CLB_STOP,current_node.st,mapa);
+				if (explored.find(child_t) == explored.end()){
+					child_t.secuencia.push_back(act_CLB_STOP);
+					frontier.push_back(child_t);
+				}
+
 			}
 			
-			if (!SolutionFound){
-				nodeN1 child_sr  = current_node;
-				child_sr.st = applyN1(act_CLB_TURN_SR,current_node.st,mapa);
-				if (explored.find(child_sr) == explored.end()){
-					child_sr.secuencia.push_back(act_CLB_TURN_SR);
-					frontier.push_back(child_sr);
-				}
-				nodeN1 child_stop  = current_node;
-				child_stop.st = applyN1(act_CLB_STOP,current_node.st,mapa);
-				if (explored.find(child_stop) == explored.end()){
-					child_stop.secuencia.push_back(act_CLB_STOP);
-					frontier.push_back(child_stop);
-				}
-				
 
+		}
+
+		if (!SolutionFound){
+			nodeN1 child_walk = current_node;
+			child_walk.st = applyN1(actWALK,current_node.st, mapa);
+			if (explored.find(child_walk) == explored.end()){
+				child_walk.secuencia.push_back(actWALK);
+				frontier.push_back(child_walk);
 			}
-
-
-		}
-
-		nodeN1 child_walk = current_node;
-		child_walk.st = applyN1(actWALK,current_node.st, mapa);
-		child_walk.secuencia.push_back(actWALK);
-		if(child_walk.st.jugador.f == final.f and child_walk.st.jugador.c == final.c){
-			current_node = child_walk;
-			SolutionFound = true;
-		}else if(explored.find(child_walk) == explored.end()){
-			frontier.push_back(child_walk);
-		}
-
-		if(!SolutionFound){
 			//Generar hijo run
 			nodeN1 child_run = current_node;
 			child_run.st = applyN1(actRUN,current_node.st,mapa);
-			child_run.secuencia.push_back(actRUN);
-			if(child_run.st.jugador.f == final.f and child_run.st.jugador.c == final.c){
-				current_node = child_run;
-				SolutionFound = true;
-			}else if(explored.find(child_run) == explored.end()){
-				frontier.push_back(child_run);
+			if(explored.find(child_run) == explored.end()){
+				child_run.secuencia.push_back(actRUN);
 			}
-		}
-		if(!SolutionFound){
 			//generar hijo turn_L
 			nodeN1 child_turnl = current_node;
 			child_turnl.st = applyN1(actTURN_L,current_node.st,mapa);
-			child_turnl.secuencia.push_back(actTURN_L);
 			if(explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
 				frontier.push_back(child_turnl);
 			}
 			//generar hijo turn_sr
 			nodeN1 child_turnsr = current_node;
 			child_turnsr.st = applyN1(actTURN_SR,current_node.st,mapa);
-			child_turnsr.secuencia.push_back(actTURN_SR);
 			if(explored.find(child_turnsr) == explored.end()){
+				child_turnsr.secuencia.push_back(actTURN_SR);
 				frontier.push_back(child_turnsr);
 			}
+
+
 		}
 
 		if(!SolutionFound and !frontier.empty()){
@@ -876,7 +871,6 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 	current_node.st = inicio;
 	bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
 	frontier.push_front(current_node);	
-	//Queda rellenar
 	while (!frontier.empty() && !SolutionFound){
 		frontier.pop_front();
 		explored.insert(current_node);
@@ -902,13 +896,13 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 		child_turnl.st = applyN2(actTURN_L,current_node.st,mapa);
 
 		if (!frontier.empty()){
-			auto itf = esta(frontier,child_turnl);
-			if ((explored.find(child_turnl) == explored.end()) && (itf == frontier.end())){
+			auto itl = esta(frontier,child_turnl);
+			if ((explored.find(child_turnl) == explored.end()) && (itl == frontier.end())){
 				child_turnl.secuencia.push_back(actTURN_L);
 				insertar(frontier,child_turnl);
-			}else if ((itf != frontier.end()) && (itf->st.coste > child_turnl.st.coste)){
+			}else if ((itl != frontier.end()) && (itl->st.coste > child_turnl.st.coste)){
 				child_turnl.secuencia.push_back(actTURN_L);
-				frontier.erase(itf);
+				frontier.erase(itl);
 				insertar(frontier,child_turnl);
 			}
 		}else if (explored.find(child_turnl) == explored.end()){
@@ -917,16 +911,16 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 		}		
 
 		nodeN2 child_turnsr = current_node;
-		child_turnsr.st = applyN2(act_CLB_TURN_SR,current_node.st,mapa);
+		child_turnsr.st = applyN2(actTURN_SR,current_node.st,mapa);
 
 		if (!frontier.empty()){
-			auto itf = esta(frontier,child_turnsr);
-			if ((explored.find(child_turnsr) == explored.end()) && (itf == frontier.end())){
+			auto itr = esta(frontier,child_turnsr);
+			if ((explored.find(child_turnsr) == explored.end()) && (itr == frontier.end())){
 				child_turnsr.secuencia.push_back(actTURN_SR);
 				insertar(frontier,child_turnsr);
-			}else if ((itf != frontier.end()) && (itf->st.coste > child_turnsr.st.coste)){
+			}else if ((itr != frontier.end()) && (itr->st.coste > child_turnsr.st.coste)){
 				child_turnsr.secuencia.push_back(actTURN_SR);
-				frontier.erase(itf);
+				frontier.erase(itr);
 				insertar(frontier,child_turnsr);
 			}
 		}else if (explored.find(child_turnsr) == explored.end()){
@@ -943,6 +937,9 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 	}
 	if (SolutionFound){
 		plan = current_node.secuencia;
+		cout<< "Encontrado un plan: ";
+		PintaPlan(current_node.secuencia);
+
 	}
 	return plan;
 

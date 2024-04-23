@@ -61,7 +61,7 @@ list<Action> secuencia;
 bool operator ==(const nodeN1 &n) const{
 return (st == n.st);
 }
-//ahora el sonambulo es importante para las comparaciones
+//ahora el cola es importante para las comparaciones
 bool operator <(const nodeN1 &n) const{
   if(st.jugador.f < n.st.jugador.f)
     return true;
