@@ -109,8 +109,7 @@ struct nodeN2{
       return true;
     else if(st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.zapatillas < n.st.zapatillas)
       return true;
-    else if(st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.zapatillas == n.st.zapatillas && st.bikini < n.st.bikini
-    )
+    else if(st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.zapatillas == n.st.zapatillas && st.bikini < n.st.bikini)
       return true;
     else
       return false;
@@ -171,6 +170,18 @@ class ComportamientoJugador : public Comportamiento {
   public:
     ComportamientoJugador(unsigned int size) : Comportamiento(size) {
       // Inicializar Variables de Estado
+      hayPlan = false;
+      tamanioMapa = size;
+      escapando = false;
+      for(int i = 0; i < 3; i++){
+        for(int j = 0; j < tamanioMapa; j++){
+          mapaResultado[i][j] = 'P';
+          mapaResultado[tamanioMapa -i -1][j] = 'P';
+          mapaResultado[j][i]='P';
+          mapaResultado[j][tamanioMapa -i -1]='P';
+        }
+      }
+      last_action = actIDLE;
     }
     ComportamientoJugador(std::vector< std::vector< unsigned char> > mapaR) : Comportamiento(mapaR) {
       // Inicializar Variables de Estado
@@ -183,6 +194,8 @@ class ComportamientoJugador : public Comportamiento {
     void VisualizaPlan(const stateN1 &st, const list<Action> &plan);
     void VisualizaPlan(const ubicacion & jugador, const ubicacion & colaborador, const list<Action> &plan);
     Action think(Sensores sensores);
+    void EfectoLastAction();
+    void PonerTerrenoEnMatriz(const vector<unsigned char> & terreno,const ubicacion & st,vector< vector<unsigned char> > & matriz);
    // bool JugadorVeColaborador(const ubicacion & j, const ubicacion & c);
     int interact(Action accion, int valor);
 

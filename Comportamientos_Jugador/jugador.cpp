@@ -346,8 +346,9 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 			st_result.colaborador.brujula = static_cast<Orientacion>((st_result.colaborador.brujula + 1) % 8);
 		break;
 		case act_CLB_STOP:
-		//No se hace nada ?
-		break;
+			//No se hace nada ?
+			st_result.colaborador = st.colaborador;
+			break;
 		
 	}
 	return st_result;
@@ -775,32 +776,38 @@ list<Action> AnchuraN1(const stateN1 & inicio, const ubicacion & final,const vec
 	current_node.st = inicio;
 	bool SolutionFound = (current_node.st.colaborador.f == final.f and current_node.st.colaborador.c == final.c);
 	frontier.push_back(current_node);
-	int nivel = 0;
 
 	while(!frontier.empty() and !SolutionFound){
 		frontier.pop_front();
 		explored.insert(current_node);
-		
+
 		if (jugadorVeColaborador(current_node.st.jugador,current_node.st.colaborador)){
 
 			nodeN1 child_clb_walk = current_node;
 			child_clb_walk.st = applyN1(act_CLB_WALK,current_node.st,mapa);
 			if (child_clb_walk.st.colaborador.f == final.f and child_clb_walk.st.colaborador.c == final.c){
+				//child_clb_walk.secuencia.push_back(act_CLB_STOP);//??
 				child_clb_walk.secuencia.push_back(act_CLB_WALK);
+				//child_clb_walk.secuencia.push_back(act_CLB_STOP);//??
 				current_node = child_clb_walk;
 				SolutionFound = true;
 			}else if (explored.find(child_clb_walk) == explored.end()){
+				//child_clb_walk.secuencia.push_back(act_CLB_STOP);//??
 				child_clb_walk.secuencia.push_back(act_CLB_WALK);
+				//child_clb_walk.secuencia.push_back(act_CLB_STOP);//??
 				frontier.push_back(child_clb_walk);
 			}
 			if (!SolutionFound){
 				nodeN1 child_turnr2 = current_node;
 				child_turnr2.st = applyN1(act_CLB_TURN_SR,current_node.st,mapa);
 				if (explored.find(child_turnr2) == explored.end()){
+					//child_clb_walk.secuencia.push_back(act_CLB_STOP);//??
 					child_turnr2.secuencia.push_back(act_CLB_TURN_SR);
+					//child_turnr2.secuencia.push_back(act_CLB_STOP);//??
 					frontier.push_back(child_turnr2);
 				}
 
+				//No mete el nodo no se porque 
 				nodeN1 child_t = current_node;
 				child_t.st = applyN1(act_CLB_STOP,current_node.st,mapa);
 				if (explored.find(child_t) == explored.end()){
@@ -812,12 +819,13 @@ list<Action> AnchuraN1(const stateN1 & inicio, const ubicacion & final,const vec
 			
 
 		}
-
+		//??
 		if (!SolutionFound){
 			nodeN1 child_walk = current_node;
 			child_walk.st = applyN1(actWALK,current_node.st, mapa);
 			if (explored.find(child_walk) == explored.end()){
 				child_walk.secuencia.push_back(actWALK);
+				//child_walk.secuencia.push_back(act_CLB_STOP);
 				frontier.push_back(child_walk);
 			}
 			//Generar hijo run
@@ -986,6 +994,7 @@ pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const cha
 	return resultado;
 }	
 
+
 stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsigned char>> & mapa,const ubicacion final){
 	stateN3 st_result = st;
 	ubicacion sig_ubicacion;
@@ -1128,6 +1137,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 		break;
 	case act_CLB_STOP:
 		//Aqui no se hace nada ?
+		st_result.colaborador = st.colaborador;
 		break;		
 
 	}
@@ -1144,7 +1154,58 @@ struct F {
 		return (sum_A < sum_B) || ((sum_A == sum_B) && (a < b));
 	}
 };
+void ComportamientoJugador::EfectoLastAction(){
+	int a;
 
+	switch(last_action){
+		case actWALK:
+			if (ubicado){
+				switch(ubicacion_juga.brujula){
+					case norte: ubicacion_juga.f--;break;
+					case noreste: ubicacion_juga.f--;ubicacion_juga.c++;break;
+					case este: ubicacion_juga.c++;break;
+					case sureste: ubicacion_juga.f++;ubicacion_juga.c++;break;
+					case sur: ubicacion_juga.f++;break;
+					case suroeste: ubicacion_juga.f++;ubicacion_juga.c--;break;
+					case oeste:ubicacion_juga.c--;break;
+					case noroeste: ubicacion_juga.f--;ubicacion_juga.c--;break;
+				}
+			}
+			break;
+		case actTURN_L:
+			a = ubicacion_juga.brujula;
+			a = (a+6)%8;
+			ubicacion_juga.brujula = static_cast<Orientacion>(a);
+			break;
+		case actTURN_SR:
+			a = ubicacion_juga.brujula;
+			a = (a+1)%8;
+			ubicacion_juga.brujula = static_cast<Orientacion>(a);
+			break;
+		case act_CLB_WALK:
+			if (ubicado){
+				switch(ubicacion_cola.brujula){
+					case norte: ubicacion_cola.f--;break;
+					case noreste: ubicacion_cola.f--;ubicacion_cola.c++;break;
+					case este: ubicacion_cola.c++;break;
+					case sureste: ubicacion_cola.f++;ubicacion_cola.c++;break;
+					case sur: ubicacion_cola.f++;break;
+					case suroeste: ubicacion_cola.f++;ubicacion_cola.c--;break;
+					case oeste:ubicacion_cola.c--;break;
+					case noroeste: ubicacion_cola.f--;ubicacion_cola.c--;break;
+				}
+			}
+			break;
+		case act_CLB_STOP:
+			//Nada ?
+			break;	
+		case act_CLB_TURN_SR:
+			a = ubicacion_cola.brujula;
+			a = (a+1)%8;
+			ubicacion_cola.brujula = static_cast<Orientacion>(a);
+			break;	
+	}
+}
 list <Action> A_asterisco(const stateN3 & inicio, const ubicacion & final, const vector<vector<unsigned char>> & mapa){
 	set<nodeN3, F> frontier;
 	nodeN3 current_node;
@@ -1166,6 +1227,7 @@ list <Action> A_asterisco(const stateN3 & inicio, const ubicacion & final, const
 			nodeN3 child_walk = current_node;
 			child_walk.st = applyN3(act_CLB_WALK,current_node.st,mapa,final);
 			child_walk.secuencia.push_back(act_CLB_WALK);
+			//child_walk.secuencia.push_back(act_CLB_STOP);
 			itf = frontier.find(child_walk);
 			if (itf != frontier.end()){
 				if (itf->st.coste > child_walk.st.coste){
@@ -1186,6 +1248,7 @@ list <Action> A_asterisco(const stateN3 & inicio, const ubicacion & final, const
 			nodeN3 child_turnsr = current_node;
 			child_turnsr.st = applyN3(act_CLB_TURN_SR,current_node.st,mapa,final);
 			child_turnsr.secuencia.push_back(act_CLB_TURN_SR);
+			//child_turnsr.secuencia.push_back(act_CLB_STOP);
 			itf = frontier.find(child_turnsr);
 			if (itf != frontier.end()){
 				if (itf->st.coste > child_turnsr.st.coste){
@@ -1304,6 +1367,9 @@ list <Action> A_asterisco(const stateN3 & inicio, const ubicacion & final, const
 
 	if (SolutionFound){
 		plan = current_node.secuencia;
+		cout<< "Encontrado un plan: ";
+		PintaPlan(current_node.secuencia);
+
 	}
 	return plan;
 
@@ -1408,10 +1474,52 @@ Action ComportamientoJugador::think(Sensores sensores){
 		}
 	}else{
 		//nivel 4
+		if (sensores.terreno[0] == 'D'){
+			zapatillas = true;
+			bikini = false;
+		}
+		if (sensores.terreno[1] == 'K'){
+			zapatillas = false;
+			bikini = true;
+		}
+		if (sensores.colision){
+			hayPlan = false;
+			ubicado = false;
+		}
+		if (!ubicado && sensores.posF != -1){
+			ubicacion_juga.f = sensores.posF;
+			ubicacion_juga.c = sensores.posC;
+			ubicacion_cola.f = sensores.CLBposF;
+			ubicacion_cola.c = sensores.CLBposC;
+			ubicacion_juga.brujula = sensores.sentido;
+			ubicacion_cola.brujula = sensores.CLBsentido;
+			ubicado = true;
+		}
+
+		if (!ubicado){
+			last_action = actWHEREIS;
+			return actWHEREIS;
+		}
+
+		if (ubicado){
+			EfectoLastAction();
+
+			//habria que poner el terreno en la matriz para ir descubriendo el mapa 
+
+		}
+
+
+
+
+
 	}
 	return accion;
 }
 
+void ComportamientoJugador::PonerTerrenoEnMatriz(const vector<unsigned char> & terreno,const ubicacion & st,vector< vector<unsigned char> > & matriz){
+	//Lo mismo que en la P1
+
+}
 
 int ComportamientoJugador::interact(Action accion, int valor)
 {
