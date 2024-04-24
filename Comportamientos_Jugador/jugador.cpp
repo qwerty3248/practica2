@@ -5,6 +5,7 @@
 #include <cmath>
 #include <set>
 #include <stack>
+#include<queue>
 
 
 bool jugadorVeColaborador(const ubicacion & j, const ubicacion & s){
@@ -954,6 +955,76 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 
 
 }
+struct comp{
+	bool operator()(const nodeN2 &a,const nodeN2 &b){
+		return a.st.coste < b.st.coste;
+	}
+};
+list<Action> CosteUniforme2(const stateN2 & inicio, const ubicacion & final, const vector<vector<unsigned char>> & mapa){
+    list<Action> plan;
+    nodeN2 current_node;
+    priority_queue<nodeN2, vector<nodeN2>, comp> frontier;
+    set<nodeN2> explored;
+
+    // Comprobar si el nodo inicial es la solución
+    bool SolutionFound = (inicio.jugador.f == final.f && inicio.jugador.c == final.c);
+
+    // Insertar el nodo inicial en la cola de prioridad
+    current_node.st = inicio;
+    current_node.st.coste = 0;
+    current_node.secuencia = list<Action>(); // Inicializar la secuencia de acciones
+    frontier.push(current_node);
+
+    // Bucle principal de búsqueda
+    while (!frontier.empty()) {
+        current_node = frontier.top(); // Obtener el nodo con menor coste
+        frontier.pop(); // Eliminar el nodo de la cola de prioridad
+
+        if (SolutionFound) {
+            // Si hemos encontrado la solución, retornar el plan
+            cout << "Encontrado un plan: ";
+            PintaPlan(current_node.secuencia);
+            return current_node.secuencia;
+        }
+
+        // Insertar el nodo explorado en el conjunto de nodos explorados
+        explored.insert(current_node);
+
+        // Generar sucesores y agregarlos a la cola de prioridad
+        for (int i = 0; i < 3; ++i) { // Suponiendo que hay tres posibles acciones
+            Action aux;
+            if (i == 0){
+                aux = actWALK;
+            }else if (i == 1){
+                aux = actTURN_L;
+            }else if (i == 2){
+                aux = actTURN_SR;
+            }
+
+            stateN2 new_state = applyN2(aux, current_node.st, mapa);
+
+            // Verificar si el nuevo estado no ha sido explorado previamente
+            if (explored.find({new_state}) == explored.end()) {
+                // Verificar si el nuevo estado es la solución
+                if (new_state.jugador.f == final.f && new_state.jugador.c == final.c) {
+                    // Agregar la acción actual a la secuencia de acciones
+                    list<Action> new_sequence = current_node.secuencia;
+                    new_sequence.push_back(aux);
+                    return new_sequence;
+                }
+
+                // Agregar el nuevo estado a la cola de prioridad
+                nodeN2 new_node;
+                new_node.st = new_state;
+                new_node.secuencia = current_node.secuencia;
+                new_node.secuencia.push_back(aux); // Agregar la acción actual a la secuencia de acciones
+                frontier.push(new_node);
+            }
+        }
+    }
+    // Si se llega a este punto, no se encontró una solución
+    return plan;
+}
 
 
 pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_colaborador, const ubicacion & final){
@@ -1504,13 +1575,68 @@ Action ComportamientoJugador::think(Sensores sensores){
 		if (ubicado){
 			EfectoLastAction();
 
-			//habria que poner el terreno en la matriz para ir descubriendo el mapa 
+			PonerTerrenoEnMatriz(sensores.terreno,ubicacion_juga,mapaResultado);
+
+			if (mapaResultado[ubicacion_cola.f][ubicacion_cola.c] == 'D'){
+				zapatillas_colaborador = true;
+				bikini_colaborador = false;
+
+			}
+			if (mapaResultado[ubicacion_cola.f][ubicacion_cola.c] == 'K'){
+				zapatillas_colaborador = false;
+				bikini_colaborador = true;
+			}
 
 		}
 
+		if (sensores.terreno[2] == 'P' || sensores.terreno[2] == 'M'){
+			if (hayPlan){
+				if(plan.front() == actWALK){
+					hayPlan = false;
+				}
+			}
 
+		}
+		if (sensores.terreno[2] == 'l' || sensores.terreno[2] == 'a'){
+			hayPlan = false;
+			escapando = true;
+		}
 
+		if (escapando){
+			if (sensores.terreno[2] == 'a' || sensores.terreno[2] == 'l' || sensores.terreno[2] == 'M' || sensores.terreno[2] == 'P'){
+				accion = actTURN_L;
+			}else{
+				accion = actWALK;
+			}
+		}
+		if (!hayPlan && !escapando){
+			goal.f = sensores.destinoF;
+			goal.c = sensores.destinoC;
+			c_stateN2.jugador = ubicacion_juga;
+			c_stateN2.colaborador = ubicacion_cola;
+			c_stateN2.coste = 0;
+			plan = CosteUniforme(c_stateN2,goal,mapaResultado);//Asi obligo a que el nivel 2 funcione
 
+			if (plan.size() > 0){
+				VisualizaPlan(ubicacion_juga,ubicacion_cola,plan);
+				hayPlan = true;
+			}
+
+		}
+
+		if (hayPlan && plan.size() > 0){
+			accion = plan.front();
+			plan.pop_front();
+		}
+		if (plan.size() == 0){
+			hayPlan = false;
+		}
+
+		if (escapando && accion == actWALK){
+			escapando = false;
+		}
+
+		last_action = accion;
 
 	}
 	return accion;
@@ -1518,6 +1644,158 @@ Action ComportamientoJugador::think(Sensores sensores){
 
 void ComportamientoJugador::PonerTerrenoEnMatriz(const vector<unsigned char> & terreno,const ubicacion & st,vector< vector<unsigned char> > & matriz){
 	//Lo mismo que en la P1
+	matriz[st.f][st.c] = terreno[0];
+	//cout << st.fil << " "<< st.col <<endl;
+
+	//aqui vamos a poner la como se llena dependiendo de la orientacion
+
+	switch(st.brujula){
+
+		case norte:
+			matriz[st.f-1][st.c-1] = terreno[1];
+			matriz[st.f-1][st.c] = terreno[2];
+			matriz[st.f-1][st.c+1] = terreno[3];
+			matriz[st.f-2][st.c-2] = terreno[4];
+			matriz[st.f-2][st.c-1] = terreno[5];
+			matriz[st.f-2][st.c+1] = terreno[7];
+			matriz[st.f-2][st.c+2] = terreno[8];
+			matriz[st.f-3][st.c-3] = terreno[9];
+			matriz[st.f-3][st.c-2] = terreno[10];
+			matriz[st.f-3][st.c+2] = terreno[14];
+			matriz[st.f-3][st.c+3] = terreno[15];
+			matriz[st.f-2][st.c] = terreno[6];
+			matriz[st.f-3][st.c-1] = terreno[11];
+			matriz[st.f-3][st.c] = terreno[12];
+			matriz[st.f-3][st.c+1] = terreno[13];
+			
+			break;
+
+		case sur:
+			matriz[st.f+1][st.c+1] = terreno[1];
+			matriz[st.f+1][st.c] = terreno[2];
+			matriz[st.f+1][st.c-1] = terreno[3];
+			matriz[st.f+2][st.c+2] = terreno[4];
+			matriz[st.f+2][st.c+1] = terreno[5];
+			matriz[st.f+2][st.c-1] = terreno[7];
+			matriz[st.f+2][st.c-2] = terreno[8];
+			matriz[st.f+3][st.c+3] = terreno[9];
+			matriz[st.f+3][st.c+2] = terreno[10];
+			matriz[st.f+3][st.c-2] = terreno[14];
+			matriz[st.f+3][st.c-3] = terreno[15];
+			matriz[st.f+2][st.c] = terreno[6];
+			matriz[st.f+3][st.c+1] = terreno[11];
+			matriz[st.f+3][st.c] = terreno[12];
+			matriz[st.f+3][st.c-1] = terreno[13];
+			break;		
+		case este:
+			matriz[st.f-1][st.c+1] = terreno[1];
+			matriz[st.f][st.c+1] = terreno[2];
+			matriz[st.f+1][st.c+1] = terreno[3];
+			matriz[st.f-2][st.c+2] = terreno[4];
+			matriz[st.f-1][st.c+2] = terreno[5];
+			matriz[st.f+1][st.c+2] = terreno[7];
+			matriz[st.f+2][st.c+2] = terreno[8];
+			matriz[st.f-3][st.c+3] = terreno[9];
+			matriz[st.f-2][st.c+3] = terreno[10];
+			matriz[st.f+2][st.c+3] = terreno[14];
+			matriz[st.f+3][st.c+3] = terreno[15];
+			matriz[st.f][st.c+2] = terreno[6];
+			matriz[st.f-1][st.c+3] = terreno[11];
+			matriz[st.f][st.c+3] = terreno[12];
+			matriz[st.f+1][st.c+3] = terreno[13];
+			break;		
+		case oeste:
+			matriz[st.f+1][st.c-1] = terreno[1];
+			matriz[st.f][st.c-1] = terreno[2];
+			matriz[st.f-1][st.c-1] = terreno[3];
+			matriz[st.f+2][st.c-2] = terreno[4];
+			matriz[st.f+1][st.c-2] = terreno[5];
+			matriz[st.f-1][st.c-2] = terreno[7];
+			matriz[st.f-2][st.c-2] = terreno[8];
+			matriz[st.f+3][st.c-3] = terreno[9];
+			matriz[st.f+2][st.c-3] = terreno[10];
+			matriz[st.f-2][st.c-3] = terreno[14];
+			matriz[st.f-3][st.c-3] = terreno[15];
+			matriz[st.f][st.c-2] = terreno[6];
+			matriz[st.f+1][st.c-3] = terreno[11];
+			matriz[st.f][st.c-3] = terreno[12];
+			matriz[st.f-1][st.c-3] = terreno[13];
+			break;
+		case noreste:
+			matriz[st.f-1][st.c] = terreno[1];
+			matriz[st.f-1][st.c+1] = terreno[2];
+			matriz[st.f][st.c+1] = terreno[3];
+			matriz[st.f-2][st.c] = terreno[4];
+			matriz[st.f-2][st.c+1] = terreno[5];
+			matriz[st.f-1][st.c+2] = terreno[7];
+			matriz[st.f][st.c+2] = terreno[8];
+			matriz[st.f-3][st.c] = terreno[9];
+			matriz[st.f-3][st.c+1] = terreno[10];
+			matriz[st.f-1][st.c+3] = terreno[14];
+			matriz[st.f][st.c+3] = terreno[15];
+			matriz[st.f-2][st.c+2] = terreno[6];
+			matriz[st.f-3][st.c+2] = terreno[11];
+			matriz[st.f-3][st.c+3] = terreno[12];
+			matriz[st.f-2][st.c+3] = terreno[13];
+			
+			break;
+		case noroeste:
+			matriz[st.f][st.c-1] = terreno[1];
+			matriz[st.f-1][st.c-1] = terreno[2];
+			matriz[st.f-1][st.c] = terreno[3];
+			matriz[st.f][st.c-2] = terreno[4];
+			matriz[st.f-1][st.c-2] = terreno[5];
+			matriz[st.f-2][st.c-1] = terreno[7];
+			matriz[st.f-2][st.c] = terreno[8];
+			matriz[st.f][st.c-3] = terreno[9];
+			matriz[st.f-1][st.c-3] = terreno[10];
+			matriz[st.f-3][st.c-1] = terreno[14];
+			matriz[st.f-3][st.c] = terreno[15];
+			matriz[st.f-2][st.c-2] = terreno[6];
+			matriz[st.f-2][st.c-3] = terreno[11];
+			matriz[st.f-3][st.c-3] = terreno[12];
+			matriz[st.f-3][st.c-2] = terreno[13];
+			
+			break;
+			
+			
+		case sureste:
+			matriz[st.f][st.c+1] = terreno[1];
+			matriz[st.f+1][st.c+1] = terreno[2];
+			matriz[st.f+1][st.c] = terreno[3];
+			matriz[st.f][st.c+2] = terreno[4];
+			matriz[st.f+1][st.c+2] = terreno[5];
+			matriz[st.f+2][st.c+1] = terreno[7];
+			matriz[st.f+2][st.c] = terreno[8];
+			matriz[st.f][st.c+3] = terreno[9];
+			matriz[st.f+1][st.c+3] = terreno[10];
+			matriz[st.f+3][st.c+1] = terreno[14];
+			matriz[st.f+3][st.c] = terreno[15];
+			matriz[st.f+2][st.c+2] = terreno[6];
+			matriz[st.f+2][st.c+3] = terreno[11];
+			matriz[st.f+3][st.c+3] = terreno[12];
+			matriz[st.f+3][st.c+2] = terreno[13];
+			break;
+		case suroeste:
+			matriz[st.f+1][st.c] = terreno[1];
+			matriz[st.f+1][st.c-1] = terreno[2];
+			matriz[st.f][st.c-1] = terreno[3];
+			matriz[st.f+2][st.c] = terreno[4];
+			matriz[st.f+2][st.c-1] = terreno[5];
+			matriz[st.f+1][st.c-2] = terreno[7];
+			matriz[st.f][st.c-2] = terreno[8];
+			matriz[st.f+3][st.c] = terreno[9];
+			matriz[st.f+3][st.c-1] = terreno[10];
+			matriz[st.f+1][st.c-3] = terreno[14];
+			matriz[st.f][st.c-3] = terreno[15];
+			matriz[st.f+2][st.c-2] = terreno[6];
+			matriz[st.f+3][st.c-2] = terreno[11];
+			matriz[st.f+3][st.c-3] = terreno[12];
+			matriz[st.f+2][st.c-3] = terreno[13];
+			break;
+
+
+	}
 
 }
 
