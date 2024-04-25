@@ -46,13 +46,13 @@ struct stateN1{
   
   ubicacion jugador;
   ubicacion colaborador;
+  Action ultimaOrdenColaborador;
   bool operator==(const stateN1 & x) const{
     if(jugador == x.jugador && colaborador == x.colaborador)
       return true;
     else
       return false;
   }
-  Action ultimaOrdenColaborador;
 };
 
 struct nodeN1{
