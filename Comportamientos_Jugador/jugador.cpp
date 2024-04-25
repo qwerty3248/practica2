@@ -955,15 +955,21 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 
 
 }
-struct comp{
-	bool operator()(const nodeN2 &a,const nodeN2 &b){
-		return a.st.coste < b.st.coste;
-	}
+struct nodeN2Comparator {
+
+    bool operator()(const nodeN2& lhs, const nodeN2& rhs) const {
+
+        return lhs.st.coste > rhs.st.coste;
+
+    }
+
 };
-list<Action> CosteUniforme2(const stateN2 & inicio, const ubicacion & final, const vector<vector<unsigned char>> & mapa){
+
+
+list<Action> CosteUniforme2(const stateN2 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa){
     list<Action> plan;
     nodeN2 current_node;
-    priority_queue<nodeN2, vector<nodeN2>, comp> frontier;
+    priority_queue<nodeN2, vector<nodeN2>, nodeN2Comparator> frontier;
     set<nodeN2> explored;
 
     // Comprobar si el nodo inicial es la solución
@@ -988,7 +994,10 @@ list<Action> CosteUniforme2(const stateN2 & inicio, const ubicacion & final, con
         }
 
         // Insertar el nodo explorado en el conjunto de nodos explorados
-        explored.insert(current_node);
+        nodeN2 new_node;
+        new_node.st = current_node.st;
+        new_node.secuencia = current_node.secuencia;
+        explored.insert(new_node);
 
         // Generar sucesores y agregarlos a la cola de prioridad
         for (int i = 0; i < 3; ++i) { // Suponiendo que hay tres posibles acciones
@@ -1004,7 +1013,10 @@ list<Action> CosteUniforme2(const stateN2 & inicio, const ubicacion & final, con
             stateN2 new_state = applyN2(aux, current_node.st, mapa);
 
             // Verificar si el nuevo estado no ha sido explorado previamente
-            if (explored.find({new_state}) == explored.end()) {
+            new_node.st = new_state;
+            new_node.secuencia = current_node.secuencia;
+            new_node.secuencia.push_back(aux); // Agregar la acción actual a la secuencia de acciones
+            if (explored.find(new_node) == explored.end()) {
                 // Verificar si el nuevo estado es la solución
                 if (new_state.jugador.f == final.f && new_state.jugador.c == final.c) {
                     // Agregar la acción actual a la secuencia de acciones
@@ -1014,10 +1026,6 @@ list<Action> CosteUniforme2(const stateN2 & inicio, const ubicacion & final, con
                 }
 
                 // Agregar el nuevo estado a la cola de prioridad
-                nodeN2 new_node;
-                new_node.st = new_state;
-                new_node.secuencia = current_node.secuencia;
-                new_node.secuencia.push_back(aux); // Agregar la acción actual a la secuencia de acciones
                 frontier.push(new_node);
             }
         }
@@ -1025,7 +1033,6 @@ list<Action> CosteUniforme2(const stateN2 & inicio, const ubicacion & final, con
     // Si se llega a este punto, no se encontró una solución
     return plan;
 }
-
 
 pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_colaborador, const ubicacion & final){
 	//Madre mia haber como saco la heuristica
@@ -1068,7 +1075,7 @@ pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const cha
 
 stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsigned char>> & mapa,const ubicacion final){
 	stateN3 st_result = st;
-	ubicacion sig_ubicacion;
+	ubicacion sig_ubicacion,sig_ubicacion2;
 	char tipo_jugador = mapa[st.jugador.f][st.jugador.c];//donde antes movimiento
 	char tipo_colaborador = mapa[st.colaborador.f][st.colaborador.c];
 	pair<int, int> h;
@@ -1114,6 +1121,78 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 
 		}
 		break;
+	case actRUN:
+		sig_ubicacion = NextCasilla(st.jugador);
+		if (casillaTransitable(sig_ubicacion,mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c)){
+			if (tipo_jugador == 'A'){
+				if (!st.bikini_jugador){
+					st_result.coste += 100;
+				}else{
+					st_result.coste +=10;
+				}
+			}else if (tipo_jugador == 'B'){
+				if (!st.zapatillas_jugador){
+					st_result.coste += 50;
+				}else{
+					st_result.coste +=15;
+				}
+			}else if (tipo_jugador == 'T'){
+				st_result.coste += 2;
+			}else {
+				st_result.coste += 1;
+			}
+			char siguiente_tipo_jugador = mapa[st_result.jugador.f][st_result.jugador.c];
+
+			if (siguiente_tipo_jugador == 'K'){
+				st_result.bikini_jugador = true;
+				st_result.zapatillas_jugador = false;
+			}else if (siguiente_tipo_jugador == 'D'){
+				st_result.bikini_jugador = false;
+				st_result.zapatillas_jugador = true;
+			}
+			sig_ubicacion2 = NextCasilla(sig_ubicacion);
+		if (casillaTransitable(sig_ubicacion,mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c)){
+			if (siguiente_tipo_jugador == 'A'){
+				if (!st_result.bikini_jugador){
+					st_result.coste += 100;
+				}else{
+					st_result.coste +=10;
+				}
+			}else if (siguiente_tipo_jugador == 'B'){
+				if (!st_result.zapatillas_jugador){
+					st_result.coste += 50;
+				}else{
+					st_result.coste +=15;
+				}
+			}else if (siguiente_tipo_jugador == 'T'){
+				st_result.coste += 2;
+			}else {
+				st_result.coste += 1;
+			}
+			char siguiente_tipo_jugador2 = mapa[st_result.jugador.f][st_result.jugador.c];
+
+			if (siguiente_tipo_jugador2 == 'K'){
+				st_result.bikini_jugador = true;
+				st_result.zapatillas_jugador = false;
+			}else if (siguiente_tipo_jugador2 == 'D'){
+				st_result.bikini_jugador = false;
+				st_result.zapatillas_jugador = true;
+			}
+
+			st_result.jugador = sig_ubicacion2;
+
+			h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final);
+
+			st_result.h = h.first + h.second;
+
+
+			}
+
+
+		}
+		
+		
+		break;	
 
 	case actTURN_L://completar las que quedan todavia 
 		if (tipo_jugador == 'A'){
@@ -1495,7 +1574,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 					{
 						c_stateN2.zapatillas=false;
 					}
-					plan = CosteUniforme(c_stateN2,goal,mapaResultado);
+					plan = CosteUniforme2(c_stateN2,goal,mapaResultado);
 					
 					break;
 				case 3:
