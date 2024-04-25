@@ -54,6 +54,7 @@ struct stateN1{
     else
       return false;
   }
+  
 };
 
 struct nodeN1{
@@ -76,6 +77,8 @@ bool operator <(const nodeN1 &n) const{
     return true;
   else if(st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.colaborador.f == n.st.colaborador.f && st.colaborador.c == n.st.colaborador.c && st.colaborador.brujula < n.st.colaborador.brujula)
    return true;
+  else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.colaborador.f == n.st.colaborador.f && st.colaborador.c == n.st.colaborador.c && st.colaborador.brujula == n.st.colaborador.brujula && st.ultimaOrdenColaborador < n.st.ultimaOrdenColaborador) 
+    return true;
   else
     return false;
 }
