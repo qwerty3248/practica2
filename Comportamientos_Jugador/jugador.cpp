@@ -6,6 +6,7 @@
 #include <set>
 #include <stack>
 #include<queue>
+#include <unistd.h>
 
 
 bool jugadorVeColaborador(const ubicacion & j, const ubicacion & s){
@@ -338,6 +339,7 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 			}
 		break;
 		case actIDLE:
+			//No se hace nada
 			break;
 		case actTURN_L:
 			st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula+6)%8);
@@ -347,17 +349,17 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 			st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula+1)%8);
 		break;
 		case act_CLB_WALK:
-			if (jugadorVeColaborador(st.jugador,st.colaborador)){
+			//if (jugadorVeColaborador(st.jugador,st.colaborador)){
 				sig_ubicacion = NextCasilla(st.colaborador);
 				if(casillaTransitable(sig_ubicacion,mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c)){
 					st_result.colaborador = sig_ubicacion;
 				}
-			}
+			//}
 		break;
 		case act_CLB_TURN_SR:
-			if (jugadorVeColaborador(st.jugador,st.colaborador)){
+			//if (jugadorVeColaborador(st.jugador,st.colaborador)){
 				st_result.colaborador.brujula = static_cast<Orientacion>((st_result.colaborador.brujula + 1) % 8);
-			}
+			//}
 			
 		break;
 		case act_CLB_STOP:
@@ -368,7 +370,7 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 
 
 	}
-	switch(st.ultimaOrdenColaborador){
+	/*switch(st.ultimaOrdenColaborador){
 		case act_CLB_WALK:
 			sig_ubicacion = NextCasilla(st.colaborador);
 			if (casillaTransitable(sig_ubicacion,mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c)){
@@ -380,7 +382,7 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 			break;	
 		case act_CLB_STOP:
 			break;
-	}
+	}*/
 	return st_result;
 }
 stateN0 applyN0(const Action &a, const stateN0 &st, const vector<vector<unsigned char>> mapa){
@@ -898,8 +900,8 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
     set<nodeN1> explored;
 	list<Action> plan;
 	nodeN1 current_node;
-	bool elegido[] = {false,false,false};
-	nodeN1 antes[3];
+	//bool elegido[] = {false,false,false};
+	//nodeN1 antes[3];
     current_node.st = inicio;
     bool SolutionFound = (current_node.st.jugador.f == final.f and current_node.st.jugador.c == final.c);
     frontier.push_back(current_node);
@@ -908,18 +910,19 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 		frontier.pop_front();
 		explored.insert(current_node);
 		PintaPlan(current_node.secuencia);
-		nodeN1 aux = current_node;
+		sleep(1);
+		//nodeN1 aux = current_node;
 
 		if (jugadorVeColaborador(current_node.st.jugador,current_node.st.colaborador)){
 			nodeN1 child_clb_walk = current_node;
             child_clb_walk.st = applyN1(act_CLB_WALK, current_node.st, mapa);
             child_clb_walk.secuencia.push_back(act_CLB_WALK);
-			aux.st.ultimaOrdenColaborador = act_CLB_WALK;
-			antes[0] = child_clb_walk;
+			//aux.st.ultimaOrdenColaborador = act_CLB_WALK;
+			//antes[0] = child_clb_walk;
             if (explored.find(child_clb_walk) == explored.end()) {
                 frontier.push_back(child_clb_walk);
 				//child_clb_walk.secuencia.push_back(act_CLB_WALK);
-				elegido[0] = true;
+				//elegido[0] = true;
 
             }else if (current_node.st.colaborador.f == final.f and current_node.st.colaborador.c == final.c){
 				SolutionFound = true;
@@ -931,22 +934,22 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 				nodeN1 child_clb_walk2 = current_node;
 				child_clb_walk2.st = applyN1(act_CLB_TURN_SR, current_node.st, mapa);
 				child_clb_walk2.secuencia.push_back(act_CLB_TURN_SR);
-				antes[1] = child_clb_walk2;
+				//antes[1] = child_clb_walk2;
 				if (explored.find(child_clb_walk2) == explored.end()) {
 					frontier.push_back(child_clb_walk2);
-					aux.st.ultimaOrdenColaborador = act_CLB_TURN_SR;
-					elegido[1] = true;
+					//aux.st.ultimaOrdenColaborador = act_CLB_TURN_SR;
+					//elegido[1] = true;
 					//child_clb_walk2.secuencia.push_back(act_CLB_TURN_SR);
 
 				}
 				nodeN1 child_clb_walk3 = current_node;
 				child_clb_walk3.st = applyN1(act_CLB_STOP, current_node.st, mapa);
 				child_clb_walk3.secuencia.push_back(act_CLB_STOP);
-				antes[2] = child_clb_walk3;
+				//antes[2] = child_clb_walk3;
 				if (explored.find(child_clb_walk3) == explored.end()) {
 					frontier.push_back(child_clb_walk3);
-					aux.st.ultimaOrdenColaborador = act_CLB_STOP;
-					elegido[2] = true;
+					//aux.st.ultimaOrdenColaborador = act_CLB_STOP;
+					//elegido[2] = true;
 					//child_clb_walk3.secuencia.push_back(act_CLB_STOP);
 
 				}
@@ -954,7 +957,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 
 		}
 		//Queda por ver esto///////
-		if (!SolutionFound){
+		/*if (!SolutionFound){
 			if (aux.st.ultimaOrdenColaborador == act_CLB_WALK){
 				current_node = aux;
 			}
@@ -964,7 +967,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 			if (aux.st.ultimaOrdenColaborador == act_CLB_STOP){
 				current_node = aux;
 			}
-		}
+		}*/
 
 		///////////////////////////
 		if (!SolutionFound){
@@ -1677,7 +1680,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 
 				st_result.jugador = sig_ubicacion2;
 
-				h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final);
+				h = heuristica(st_result,siguiente_tipo_jugador2,tipo_colaborador,final);
 
 				st_result.h = h.first + h.second;
 
@@ -1688,6 +1691,9 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 		}
 		
 		
+		break;	
+	case actIDLE:
+		//No se hace nada
 		break;	
 
 	case actTURN_L://completar las que quedan todavia 
@@ -1783,7 +1789,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 		break;
 	case act_CLB_STOP:
 		//Aqui no se hace nada ?
-		st_result.colaborador = st.colaborador;
+		//st_result.colaborador = st.colaborador; //??
 		break;		
 
 	}
