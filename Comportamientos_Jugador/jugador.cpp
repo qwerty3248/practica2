@@ -888,36 +888,35 @@ struct Orden{
 		else
 			return false;
 	} 
-};nodeN1 current_node;
+};
+
 
     
 list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa){
 	list<nodeN1> frontier;
-
-    set<stateN1, Orden> explored;
-
-    list<Action> plan;
-
+    //set<stateN1, Orden> explored;
+    set<nodeN1> explored;
+	list<Action> plan;
+	nodeN1 current_node;
 	bool elegido[] = {false,false,false};
 	nodeN1 antes[3];
-
     current_node.st = inicio;
-
     bool SolutionFound = (current_node.st.jugador.f == final.f and current_node.st.jugador.c == final.c);
-
     frontier.push_back(current_node);
 
 	while (!frontier.empty() and !SolutionFound){
 		frontier.pop_front();
-		explored.insert(current_node.st);
+		explored.insert(current_node);
 		PintaPlan(current_node.secuencia);
+		nodeN1 aux = current_node;
 
 		if (jugadorVeColaborador(current_node.st.jugador,current_node.st.colaborador)){
 			nodeN1 child_clb_walk = current_node;
             child_clb_walk.st = applyN1(act_CLB_WALK, current_node.st, mapa);
             child_clb_walk.secuencia.push_back(act_CLB_WALK);
+			aux.st.ultimaOrdenColaborador = act_CLB_WALK;
 			antes[0] = child_clb_walk;
-            if (explored.find(child_clb_walk.st) == explored.end()) {
+            if (explored.find(child_clb_walk) == explored.end()) {
                 frontier.push_back(child_clb_walk);
 				//child_clb_walk.secuencia.push_back(act_CLB_WALK);
 				elegido[0] = true;
@@ -933,8 +932,9 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 				child_clb_walk2.st = applyN1(act_CLB_TURN_SR, current_node.st, mapa);
 				child_clb_walk2.secuencia.push_back(act_CLB_TURN_SR);
 				antes[1] = child_clb_walk2;
-				if (explored.find(child_clb_walk2.st) == explored.end()) {
+				if (explored.find(child_clb_walk2) == explored.end()) {
 					frontier.push_back(child_clb_walk2);
+					aux.st.ultimaOrdenColaborador = act_CLB_TURN_SR;
 					elegido[1] = true;
 					//child_clb_walk2.secuencia.push_back(act_CLB_TURN_SR);
 
@@ -943,8 +943,9 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 				child_clb_walk3.st = applyN1(act_CLB_STOP, current_node.st, mapa);
 				child_clb_walk3.secuencia.push_back(act_CLB_STOP);
 				antes[2] = child_clb_walk3;
-				if (explored.find(child_clb_walk3.st) == explored.end()) {
+				if (explored.find(child_clb_walk3) == explored.end()) {
 					frontier.push_back(child_clb_walk3);
+					aux.st.ultimaOrdenColaborador = act_CLB_STOP;
 					elegido[2] = true;
 					//child_clb_walk3.secuencia.push_back(act_CLB_STOP);
 
@@ -954,15 +955,14 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 		}
 		//Queda por ver esto///////
 		if (!SolutionFound){
-			if (elegido[0]){
-				elegido[0] = false;
-				current_node = antes[0];
-			}else if (elegido[1]){
-				elegido[1] = false;
-				current_node = antes[1];
-			}else if (elegido[2]){
-				elegido[2] = false;
-				current_node = antes[2];
+			if (aux.st.ultimaOrdenColaborador == act_CLB_WALK){
+				current_node = aux;
+			}
+			if (aux.st.ultimaOrdenColaborador == act_CLB_TURN_SR){
+				current_node = aux;
+			}
+			if (aux.st.ultimaOrdenColaborador == act_CLB_STOP){
+				current_node = aux;
 			}
 		}
 
@@ -971,7 +971,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 			nodeN1 child_clb_walk4 = current_node;
 			child_clb_walk4.st = applyN1(actWALK, current_node.st, mapa);
 			child_clb_walk4.secuencia.push_back(actWALK);
-			if (explored.find(child_clb_walk4.st) == explored.end()) {
+			if (explored.find(child_clb_walk4) == explored.end()) {
 				frontier.push_back(child_clb_walk4);
 				//child_clb_walk4.secuencia.push_back(actWALK);
 
@@ -979,7 +979,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 			nodeN1 child_clb_walk41 = current_node;
 			child_clb_walk41.st = applyN1(actRUN, current_node.st, mapa);
 			child_clb_walk41.secuencia.push_back(actRUN);
-			if (explored.find(child_clb_walk41.st) == explored.end()) {
+			if (explored.find(child_clb_walk41) == explored.end()) {
 				frontier.push_back(child_clb_walk41);
 				//child_clb_walk41.secuencia.push_back(actRUN);
 
@@ -987,7 +987,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 			nodeN1 child_clb_walk42 = current_node;
 			child_clb_walk42.st = applyN1(actIDLE, current_node.st, mapa);
 			child_clb_walk42.secuencia.push_back(actIDLE);
-			if (explored.find(child_clb_walk42.st) == explored.end()) {
+			if (explored.find(child_clb_walk42) == explored.end()) {
 				frontier.push_back(child_clb_walk42);
 				//child_clb_walk42.secuencia.push_back(actIDLE);
 
@@ -995,7 +995,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 			nodeN1 child_clb_walk421 = current_node;
 			child_clb_walk421.st = applyN1(actTURN_L, current_node.st, mapa);
 			child_clb_walk421.secuencia.push_back(actTURN_L);
-			if (explored.find(child_clb_walk421.st) == explored.end()) {
+			if (explored.find(child_clb_walk421) == explored.end()) {
 				frontier.push_back(child_clb_walk421);
 				//child_clb_walk421.secuencia.push_back(actTURN_L);
 
@@ -1003,7 +1003,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 			nodeN1 child_clb_walk4212 = current_node;
 			child_clb_walk4212.st = applyN1(actTURN_SR, current_node.st, mapa);
 			child_clb_walk4212.secuencia.push_back(actTURN_SR);
-			if (explored.find(child_clb_walk4212.st) == explored.end()) {
+			if (explored.find(child_clb_walk4212) == explored.end()) {
 				frontier.push_back(child_clb_walk4212);
 				//child_clb_walk4212.secuencia.push_back(act_CLB_TURN_SR);
 
@@ -1012,7 +1012,7 @@ list<Action> BFS2(const stateN1 &inicio, const ubicacion &final, const vector<ve
 		}
 		if (!frontier.empty()) {
             current_node = frontier.front();
-            while (!frontier.empty() and explored.find(current_node.st) != explored.end()) {
+            while (!frontier.empty() and explored.find(current_node) != explored.end()) {
                 frontier.pop_front();
                 if (!frontier.empty()) {
                     current_node = frontier.front();
