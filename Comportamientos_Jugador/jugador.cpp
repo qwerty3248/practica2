@@ -1661,6 +1661,20 @@ void ComportamientoJugador::EfectoLastAction(){
 				}
 			}
 			break;
+		case actRUN:
+			if (ubicado){
+				switch(ubicacion_juga.brujula){
+					case norte: ubicacion_juga.f-=2;break;
+					case noreste: ubicacion_juga.f-=2;ubicacion_juga.c+=2;break;
+					case este: ubicacion_juga.c+=2;break;
+					case sureste: ubicacion_juga.f+=2;ubicacion_juga.c+=2;break;
+					case sur: ubicacion_juga.f+=2;break;
+					case suroeste: ubicacion_juga.f+=2;ubicacion_juga.c-=2;break;
+					case oeste:ubicacion_juga.c-=2;break;
+					case noroeste: ubicacion_juga.f-=2;ubicacion_juga.c-=2;break;
+				}
+			}
+			break;	
 		case actTURN_L:
 			a = ubicacion_juga.brujula;
 			a = (a+6)%8;
