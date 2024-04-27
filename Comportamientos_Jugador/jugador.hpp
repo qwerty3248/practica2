@@ -49,7 +49,7 @@ struct stateN1{
   ubicacion colaborador;
   Action ultimaOrdenColaborador;
   bool operator==(const stateN1 & x) const{
-    if(jugador == x.jugador && colaborador == x.colaborador)
+    if(jugador == x.jugador && colaborador == x.colaborador && ultimaOrdenColaborador == x.ultimaOrdenColaborador)
       return true;
     else
       return false;
