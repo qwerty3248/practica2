@@ -885,7 +885,7 @@ list<Action> BFS(const stateN1 &inicio, const ubicacion &final, const vector<vec
 	while (!frontier.empty() and !SolutionFound){
 		frontier.pop_front();
 		explored.insert(current_node);
-		PintaPlan(current_node.secuencia);
+		//PintaPlan(current_node.secuencia);
 
 		//PintaPlan(current_node.secuencia);
 
