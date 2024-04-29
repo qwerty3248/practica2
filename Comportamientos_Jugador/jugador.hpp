@@ -49,7 +49,7 @@ struct stateN1{
   ubicacion colaborador;
   Action ultimaOrdenColaborador;
   bool operator==(const stateN1 & x) const{
-    if(jugador == x.jugador && colaborador == x.colaborador && ultimaOrdenColaborador == x.ultimaOrdenColaborador)
+    if(jugador == x.jugador and colaborador == x.colaborador && ultimaOrdenColaborador == x.ultimaOrdenColaborador)
       return true;
     else
       return false;
@@ -122,6 +122,7 @@ struct nodeN2{
 struct stateN3{
   ubicacion jugador;
   ubicacion colaborador;
+  Action ultimaAccionColaborador;
   int coste; //coste de llegar a ese nodo
   int h; //valor de la heuristica
   bool bikini_jugador;
