@@ -467,7 +467,63 @@ void anulaMatriz(vector<vector<unsigned char>> &matriz){
 		}
 	}
 }
+void ComportamientoJugador::VisualizaPlan(const stateN1 &st, const list<Action> &plan)
+{
+    // anula la matriz del plan y copia el estado actual
+    anulaMatriz(mapaConPlan);
+    stateN1 cst = st;
 
+    // itera por cada acción del plan
+    auto it = plan.begin();
+    while(it != plan.end()) {
+        // ejecuta la última acción del colaborador
+        if ((*it != act_CLB_WALK) && (*it != act_CLB_TURN_SR) && (*it != act_CLB_STOP)) {
+            switch (cst.ultimaOrdenColaborador) {
+                case act_CLB_WALK:
+                    cst.colaborador = NextCasilla(cst.colaborador);
+                    mapaConPlan[cst.colaborador.f][cst.colaborador.c] = 2;
+                    break;
+                case act_CLB_TURN_SR:
+                    cst.colaborador.brujula = (Orientacion) ((cst.colaborador.brujula+1)%8);
+                    break;
+            }
+        }
+
+        // ejecuta la acción del plan
+        switch (*it) {
+            case actRUN:
+                cst.jugador = NextCasilla(cst.jugador);
+                mapaConPlan[cst.jugador.f][cst.jugador.c] = 3;
+                cst.jugador = NextCasilla(cst.jugador);
+                mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
+                break;
+            case actWALK:
+                cst.jugador = NextCasilla(cst.jugador);
+                mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
+                break;
+            case actTURN_SR:
+                cst.jugador.brujula = (Orientacion) ((cst.jugador.brujula+1)%8);
+                break;
+            case actTURN_L:
+                cst.jugador.brujula = (Orientacion) ((cst.jugador.brujula+6)%8);
+                break;
+            case act_CLB_WALK:
+                cst.ultimaOrdenColaborador = act_CLB_WALK;
+                cst.colaborador = NextCasilla(cst.colaborador);
+                mapaConPlan[cst.colaborador.f][cst.colaborador.c] = 2;
+                break;
+            case act_CLB_TURN_SR:
+                cst.ultimaOrdenColaborador = act_CLB_TURN_SR;
+                cst.colaborador.brujula = (Orientacion) ((cst.colaborador.brujula+1)%8);
+                break;
+            case act_CLB_STOP:
+                cst.ultimaOrdenColaborador = act_CLB_STOP;
+                break;
+        }
+
+        it++; // siguiente acción
+    }
+}
 void ComportamientoJugador::VisualizaPlan(const stateN0 &st, const list<Action> &plan){
 	 anulaMatriz(mapaConPlan);
 	 stateN0 cst = st;
@@ -519,57 +575,61 @@ void ComportamientoJugador::VisualizaPlan(const stateN0 &st, const list<Action> 
 		it++;
 	 }
 }
-void ComportamientoJugador::VisualizaPlan(const stateN1 &st, const list<Action> &plan){
-	 anulaMatriz(mapaConPlan);
-	 stateN1 cst = st;
+void ComportamientoJugador::VisualizaPlan(const stateN3 &st, const list<Action> &plan){
+	// anula la matriz del plan y copia el estado actual
+    anulaMatriz(mapaConPlan);
+    stateN3 cst = st;
 
-	 auto it = plan.begin();
-	 while(it != plan.end()){
-		if((*it != act_CLB_WALK) and (*it != act_CLB_TURN_SR) and (*it != act_CLB_STOP)){
-			switch (cst.ultimaOrdenColaborador){
+    // itera por cada acción del plan
+    auto it = plan.begin();
+    while(it != plan.end()) {
+        // ejecuta la última acción del colaborador
+        if ((*it != act_CLB_WALK) && (*it != act_CLB_TURN_SR) && (*it != act_CLB_STOP)) {
+            switch (cst.ultimaAccionColaborador) {
+                case act_CLB_WALK:
+                    cst.colaborador = NextCasilla(cst.colaborador);
+                    mapaConPlan[cst.colaborador.f][cst.colaborador.c] = 2;
+                    break;
+                case act_CLB_TURN_SR:
+                    cst.colaborador.brujula = (Orientacion) ((cst.colaborador.brujula+1)%8);
+                    break;
+            }
+        }
 
-				case act_CLB_WALK:
-					cst.colaborador = NextCasilla(cst.colaborador);
-					mapaConPlan[cst.colaborador.f][cst.colaborador.c] = 2;
-					break;
-				case act_CLB_TURN_SR:
-					cst.colaborador.brujula = (Orientacion)((cst.colaborador.brujula+1)%8);
-					break;					
-			}
-		}
-		switch(*it){
+        // ejecuta la acción del plan
+        switch (*it) {
+            case actRUN:
+                cst.jugador = NextCasilla(cst.jugador);
+                mapaConPlan[cst.jugador.f][cst.jugador.c] = 3;
+                cst.jugador = NextCasilla(cst.jugador);
+                mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
+                break;
+            case actWALK:
+                cst.jugador = NextCasilla(cst.jugador);
+                mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
+                break;
+            case actTURN_SR:
+                cst.jugador.brujula = (Orientacion) ((cst.jugador.brujula+1)%8);
+                break;
+            case actTURN_L:
+                cst.jugador.brujula = (Orientacion) ((cst.jugador.brujula+6)%8);
+                break;
+            case act_CLB_WALK:
+                cst.ultimaAccionColaborador = act_CLB_WALK;
+                cst.colaborador = NextCasilla(cst.colaborador);
+                mapaConPlan[cst.colaborador.f][cst.colaborador.c] = 2;
+                break;
+            case act_CLB_TURN_SR:
+                cst.ultimaAccionColaborador = act_CLB_TURN_SR;
+                cst.colaborador.brujula = (Orientacion) ((cst.colaborador.brujula+1)%8);
+                break;
+            case act_CLB_STOP:
+                cst.ultimaAccionColaborador = act_CLB_STOP;
+                break;
+        }
 
-			case actRUN:
-				cst.jugador = NextCasilla(cst.jugador);
-				mapaConPlan[cst.jugador.f][cst.jugador.c] = 3;
-				cst.jugador = NextCasilla(cst.jugador);
-				mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
-				break;
-			case actWALK:
-				cst.jugador = NextCasilla(cst.jugador);
-				mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
-				break;
-			case actTURN_SR:
-				cst.jugador.brujula = (Orientacion)((cst.jugador.brujula+1)%8);
-				break;
-			case actTURN_L:
-				cst.jugador.brujula = (Orientacion)((cst.jugador.brujula+6)%8);
-				break;
-			case act_CLB_WALK:
-				cst.colaborador = NextCasilla(cst.colaborador);
-				cst.ultimaOrdenColaborador = act_CLB_TURN_SR;
-				mapaConPlan[cst.colaborador.f][cst.colaborador.c] = 2;
-				break;
-			case act_CLB_TURN_SR:
-				cst.colaborador.brujula = (Orientacion)((cst.colaborador.brujula+1)%8);
-				cst.ultimaOrdenColaborador = act_CLB_TURN_SR;
-				break;
-			case act_CLB_STOP:
-				cst.ultimaOrdenColaborador = act_CLB_STOP;
-				break;
-		}
-		it++;
-	 }
+        it++; // siguiente acción
+    }
 }
 void ComportamientoJugador::VisualizaPlan(const ubicacion & jugador, const ubicacion & colaborador, const list<Action> &plan){
 	anulaMatriz(mapaConPlan);
@@ -1243,18 +1303,18 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 			if (casillaTransitable(sig_ubicacion,mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c)){
 				if (siguiente_tipo_jugador == 'A'){
 					if (!st_result.bikini_jugador){
-						st_result.coste += 100;
-					}else{
-						st_result.coste +=10;
-					}
-				}else if (siguiente_tipo_jugador == 'B'){
-					if (!st_result.zapatillas_jugador){
-						st_result.coste += 50;
+						st_result.coste += 150;
 					}else{
 						st_result.coste +=15;
 					}
+				}else if (siguiente_tipo_jugador == 'B'){
+					if (!st_result.zapatillas_jugador){
+						st_result.coste += 75;
+					}else{
+						st_result.coste +=25;
+					}
 				}else if (siguiente_tipo_jugador == 'T'){
-					st_result.coste += 2;
+					st_result.coste += 3;
 				}else {
 					st_result.coste += 1;
 				}
@@ -1289,29 +1349,29 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 	case actTURN_L://completar las que quedan todavia 
 		if (tipo_jugador == 'A'){
 			if (!st.bikini_jugador){
-				st_result.coste += 25;
+				st_result.coste += 30;
 			}else {
 				st_result.coste += 5;
 			}
 		}else if (tipo_jugador == 'B'){
 			if (!st.zapatillas_jugador){
-				st_result.coste += 5;
+				st_result.coste += 7;
 			}else{
 				st_result.coste += 1;
 			}
 		}else if (tipo_jugador == 'T'){
 			st_result.coste += 2;
 		}else{
-			st_result.coste += 5;
+			st_result.coste += 1;
 		}
 		st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 6) % 8);
 		break;
 	case actTURN_SR:
 		if (tipo_jugador == 'A'){
 			if (!st.bikini_jugador){
-				st_result.coste += 25;
+				st_result.coste += 10;
 			}else {
-				st_result.coste += 5;
+				st_result.coste += 2;
 			}
 		}else if (tipo_jugador == 'B'){
 			if (!st.zapatillas_jugador){
@@ -1320,9 +1380,9 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 				st_result.coste += 1;
 			}
 		}else if (tipo_jugador == 'T'){
-			st_result.coste += 2;
+			st_result.coste += 1;
 		}else{
-			st_result.coste += 5;
+			st_result.coste += 1;
 		}
 		st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 1) % 8);
 		break;
@@ -1363,13 +1423,13 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 	case act_CLB_TURN_SR:
 		if (tipo_colaborador == 'A' ){
 			if (!st.bikini_colaborador){
-				st_result.coste += 7;
+				st_result.coste += 10;
 			}else {	
 				st_result.coste += 2;
 			}
 		}else if (tipo_colaborador == 'B'){
 			if (!st.zapatillas_colaborador){
-				st_result.coste += 3;
+				st_result.coste += 5;
 			}else{
 				st_result.coste += 1;
 			}
@@ -1739,8 +1799,16 @@ Action ComportamientoJugador::think(Sensores sensores){
 					break;
 			}
 			if(plan.size() > 0){
-				VisualizaPlan(ubicacion_juga,ubicacion_cola,plan);
-				//VisualizaPlan(c_stateN1,plan);
+				if (sensores.nivel == 2){
+					VisualizaPlan(ubicacion_juga,ubicacion_cola,plan);
+				}else if (sensores.nivel == 1){
+					VisualizaPlan(c_stateN1,plan);
+				}else if (sensores.nivel == 0){
+					VisualizaPlan(ubicacion_juga,ubicacion_cola,plan);
+				}else if (sensores.nivel == 3){
+					VisualizaPlan(c_stateN3,plan);
+				}
+				
 				hayPlan = true;
 			}
 		}

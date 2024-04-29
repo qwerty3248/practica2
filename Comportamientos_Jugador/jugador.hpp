@@ -196,8 +196,10 @@ class ComportamientoJugador : public Comportamiento {
     ComportamientoJugador(const ComportamientoJugador & comport) : Comportamiento(comport){}
     ~ComportamientoJugador(){}
     void VisualizaPlan(const stateN0 &st, const list<Action> &plan);
-    void VisualizaPlan(const stateN1 &st, const list<Action> &plan);
+    //void VisualizaPlan(const stateN1 &st, const list<Action> &plan);
     void VisualizaPlan(const ubicacion & jugador, const ubicacion & colaborador, const list<Action> &plan);
+    void VisualizaPlan(const stateN1 &st, const list<Action> &plan);
+    void VisualizaPlan(const stateN3 &st, const list<Action> &plan);
     Action think(Sensores sensores);
     void EfectoLastAction();
     void PonerTerrenoEnMatriz(const vector<unsigned char> & terreno,const ubicacion & st,vector< vector<unsigned char> > & matriz);
