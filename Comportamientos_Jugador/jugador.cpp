@@ -993,24 +993,24 @@ list<Action> BFS(const stateN1 &inicio, const ubicacion &final, const vector<vec
 		}
 
 		if(current_node.st.ultimaOrdenColaborador == act_CLB_WALK){
-				nodeN1 child_node_walk = current_node;
-				child_node_walk.st = applyN1(act_CLB_WALK,child_node_walk.st,mapa);
-				if(!(child_node_walk == current_node)){
-					current_node = child_node_walk;
-				}
-			}else if(current_node.st.ultimaOrdenColaborador == act_CLB_TURN_SR){
-				nodeN1 child_node_turn = current_node;
-				child_node_turn.st = applyN1(act_CLB_TURN_SR,child_node_turn.st,mapa);
-				if(!(child_node_turn == current_node)){
-					current_node = child_node_turn;
-				}
-			}else if(current_node.st.ultimaOrdenColaborador == act_CLB_STOP){
-				nodeN1 child_node_stop = current_node;
-				child_node_stop.st = applyN1(act_CLB_STOP,child_node_stop.st,mapa);
-				if(!(child_node_stop == current_node)){
-					current_node = child_node_stop;
-				}
+			nodeN1 child_clb_walk = current_node;
+			child_clb_walk.st = applyN1(act_CLB_WALK,child_clb_walk.st,mapa);
+			if(!(child_clb_walk == current_node)){
+				current_node = child_clb_walk;
 			}
+		}else if(current_node.st.ultimaOrdenColaborador == act_CLB_TURN_SR){
+			nodeN1 child_clb_sr = current_node;
+			child_clb_sr.st = applyN1(act_CLB_TURN_SR,child_clb_sr.st,mapa);
+			if(!(child_clb_sr == current_node)){
+				current_node = child_clb_sr;
+			}
+		}else if(current_node.st.ultimaOrdenColaborador == act_CLB_STOP){
+			nodeN1 child_clb_stop = current_node;
+			child_clb_stop.st = applyN1(act_CLB_STOP,child_clb_stop.st,mapa);
+			if(!(child_clb_stop == current_node)){
+				current_node = child_clb_stop;
+			}
+		}
 
 
 
