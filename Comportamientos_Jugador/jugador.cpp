@@ -1182,33 +1182,81 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 
 
 }
-pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_colaborador, const ubicacion & final){
+pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_colaborador, const ubicacion & final, const Action &a){
 	//Madre mia haber como saco la heuristica
 	pair <int,int> resultado = {0,0};
 
 	if (!(st.colaborador.f == final.f && st.colaborador.c == final.c)){
-		//Distancia manhatan del jugador al colaborador ?
+		//Ahora es la chyby
 		if (!jugadorVeColaborador(st.jugador,st.colaborador)){//Si no lo ve se calcula la distancia proxima para llegar
-			resultado.first = abs(st.colaborador.f - st.jugador.f) + abs(st.colaborador.c - st.jugador.c);
-			resultado.first = resultado.first -1;
-			if (tipo_jugador == 'A'){
-				if (!st.bikini_jugador){
-					resultado.first += 100;
-				}else{
-					resultado.first += 10;
-				}
-			}else if (tipo_jugador == 'B'){
-				if (!st.zapatillas_jugador){
-					resultado.first += 50;
-				}else{
-					resultado.first += 15;
-				}
-			}else if (tipo_jugador == 'T'){
-				resultado.first += 2;
+			//resultado.first = abs(st.colaborador.f - st.jugador.f) + abs(st.colaborador.c - st.jugador.c);
+			resultado.first = max(abs(st.colaborador.f - st.jugador.f), abs(st.colaborador.c - st.jugador.c));
+			//resultado.first = resultado.first -1;
+			switch(a){
+				case actWALK:
+					if (tipo_jugador == 'A'){
+						if (!st.bikini_jugador){
+							resultado.first += 100;
+						}else{
+							resultado.first += 10;
+						}
+					}else if (tipo_jugador == 'B'){
+						if (!st.zapatillas_jugador){
+							resultado.first += 50;
+						}else{
+							resultado.first += 15;
+						}
+					}else if (tipo_jugador == 'T'){
+						resultado.first += 2;
 
-			}else{
+					}else{
 
-				resultado.first += 1;
+						resultado.first += 1;
+					}
+				break;
+				case actRUN:
+					if (tipo_jugador == 'A'){
+						if (!st.bikini_jugador){
+							resultado.first += 150;
+						}else{
+							resultado.first +=15;
+						}
+					}else if (tipo_jugador == 'B'){
+						if (!st.zapatillas_jugador){
+							resultado.first += 75;
+						}else{
+							resultado.first +=25;
+						}
+					}else if (tipo_jugador == 'T'){
+						resultado.first += 3;
+					}else {
+						resultado.first += 1;
+					}
+
+
+				break;
+				case act_CLB_WALK:
+					if (tipo_colaborador == 'A'){
+							if (!st.bikini_jugador){
+								resultado.first += 100;
+							}else{
+								resultado.first += 10;
+							}
+						}else if (tipo_colaborador == 'B'){
+							if (!st.zapatillas_jugador){
+								resultado.first += 50;
+							}else{
+								resultado.first += 15;
+							}
+						}else if (tipo_colaborador == 'T'){
+							resultado.first += 2;
+
+						}else{
+
+							resultado.first += 1;
+						}
+				break;
+
 			}
 
 		}
@@ -1262,7 +1310,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 
 			st_result.jugador = sig_ubicacion;
 
-			h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final);
+			h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final,a);
 
 			st_result.h = h.first + h.second;
 
@@ -1330,7 +1378,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 
 				st_result.jugador = sig_ubicacion2;
 
-				h = heuristica(st_result,siguiente_tipo_jugador2,tipo_colaborador,final);
+				h = heuristica(st_result,siguiente_tipo_jugador2,tipo_colaborador,final,a);
 
 				st_result.h = h.first + h.second;
 
@@ -1415,7 +1463,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 				st_result.bikini_colaborador = false;
 			}
 			st_result.colaborador = sig_ubicacion;
-			h = heuristica(st_result,tipo_jugador,siguiente_tipo_colaborador,final);
+			h = heuristica(st_result,tipo_jugador,siguiente_tipo_colaborador,final,a);
 			st_result.h = h.first + h.second;
 			st_result.ultimaAccionColaborador = act_CLB_WALK;
 		}
@@ -1628,7 +1676,7 @@ list <Action> A_asterisco(const stateN3 & inicio, const ubicacion & final, const
 				if(!(child_node_stop == current_node)){
 					current_node = child_node_stop;
 				}
-			}
+		}
 
 		//Aqui ya no es colaborador queda hacer el walk girar L y SR
 		nodeN3 child_walk2 = current_node;
@@ -1790,8 +1838,8 @@ Action ComportamientoJugador::think(Sensores sensores){
 					}else{
 						c_stateN3.zapatillas_colaborador = false;
 					}
-
-					pair <int,int> h_ini = heuristica(c_stateN3,tipo_juga,tipo_cola,goal);
+					Action a = actIDLE;
+					pair <int,int> h_ini = heuristica(c_stateN3,tipo_juga,tipo_cola,goal,a);
 					c_stateN3.h = h_ini.first + h_ini.second;
 
 					plan = A_asterisco(c_stateN3,goal,mapaResultado);
