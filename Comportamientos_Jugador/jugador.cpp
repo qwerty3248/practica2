@@ -1184,7 +1184,7 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 }
 struct CompareCoste {
     bool operator()(const nodeN2& a, const nodeN2& b) const {
-        return a.st.coste < b.st.coste; // Orden ascendente por coste
+        return a.st.coste > b.st.coste; // Orden ascendente por coste
     }
 };
 list<Action> CosteUniforme2(const stateN2 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa){
@@ -1196,7 +1196,7 @@ list<Action> CosteUniforme2(const stateN2 &inicio, const ubicacion &final, const
     bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
     frontier.push(current_node);    
     while (!frontier.empty() &&!SolutionFound){
-        current_node = frontier.top();
+        //current_node = frontier.top();
         frontier.pop();
         explored.insert(current_node);
 
@@ -1230,7 +1230,11 @@ list<Action> CosteUniforme2(const stateN2 &inicio, const ubicacion &final, const
         child_tu.secuencia.push_back(actRUN);
         if (explored.find(child_tu) == explored.end()){
             frontier.push(child_tu);
-        }
+        }	
+
+		if (!frontier.empty()){
+			current_node = frontier.top();
+		}
 
         if (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c){
             SolutionFound = true;
