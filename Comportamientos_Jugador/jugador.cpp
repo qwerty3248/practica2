@@ -5,7 +5,7 @@
 #include <cmath>
 #include <set>
 #include <stack>
-#include<queue>
+#include <queue>
 #include <unistd.h>
 
 
@@ -1182,6 +1182,67 @@ list<Action> CosteUniforme(const stateN2 & inicio, const ubicacion & final, cons
 
 
 }
+struct CompareCoste {
+    bool operator()(const nodeN2& a, const nodeN2& b) const {
+        return a.st.coste < b.st.coste; // Orden ascendente por coste
+    }
+};
+list<Action> CosteUniforme2(const stateN2 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa){
+    priority_queue<nodeN2, vector<nodeN2>, CompareCoste> frontier;
+    nodeN2 current_node;
+    set<nodeN2> explored;
+    list<Action> plan;
+    current_node.st = inicio;
+    bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
+    frontier.push(current_node);    
+    while (!frontier.empty() &&!SolutionFound){
+        current_node = frontier.top();
+        frontier.pop();
+        explored.insert(current_node);
+
+        nodeN2 child_walk = current_node;
+        child_walk.st = applyN2(actWALK, current_node.st, mapa);
+        child_walk.st.coste = current_node.st.coste + child_walk.st.coste;
+        child_walk.secuencia.push_back(actWALK);
+        if (explored.find(child_walk) == explored.end()){
+            frontier.push(child_walk);
+        }
+
+        nodeN2 child_turnl = current_node;
+        child_turnl.st = applyN2(actTURN_L, current_node.st, mapa);
+        child_turnl.st.coste = current_node.st.coste + child_turnl.st.coste;
+        child_turnl.secuencia.push_back(actTURN_L);
+        if (explored.find(child_turnl) == explored.end()){
+            frontier.push(child_turnl);
+        }
+
+        nodeN2 child_turnsr = current_node;
+        child_turnsr.st = applyN2(actTURN_SR, current_node.st, mapa);
+        child_turnsr.st.coste = current_node.st.coste + child_turnsr.st.coste;
+        child_turnsr.secuencia.push_back(actTURN_SR);
+        if (explored.find(child_turnsr) == explored.end()){
+            frontier.push(child_turnsr);
+        }
+
+        nodeN2 child_tu = current_node;
+        child_tu.st = applyN2(actRUN, current_node.st, mapa);
+        child_tu.st.coste = current_node.st.coste + child_tu.st.coste;
+        child_tu.secuencia.push_back(actRUN);
+        if (explored.find(child_tu) == explored.end()){
+            frontier.push(child_tu);
+        }
+
+        if (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c){
+            SolutionFound = true;
+        }
+    }
+    if (SolutionFound){
+        plan = current_node.secuencia;
+        cout << "Encontrado un plan: ";
+        PintaPlan(current_node.secuencia);
+    }
+    return plan;
+}
 pair<int,int> heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_colaborador, const ubicacion & final, const Action &a){
 	//Madre mia haber como saco la heuristica
 	pair <int,int> resultado = {0,0};
@@ -1811,7 +1872,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 					{
 						c_stateN2.zapatillas=false;
 					}
-					plan = CosteUniforme(c_stateN2,goal,mapaResultado);
+					plan = CosteUniforme2(c_stateN2,goal,mapaResultado);
 					
 					break;
 				case 3:
