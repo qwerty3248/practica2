@@ -130,7 +130,7 @@ struct stateN3{
   bool bikini_colaborador;
   bool zapatillas_colaborador;
   bool operator==(const stateN3 & x) const{
-    if(jugador == x.jugador && colaborador == x.colaborador && bikini_jugador == x.bikini_jugador && zapatillas_jugador == x.zapatillas_jugador && bikini_colaborador == x.bikini_colaborador && zapatillas_colaborador == x.zapatillas_colaborador)
+    if(jugador == x.jugador && colaborador == x.colaborador && bikini_jugador == x.bikini_jugador && zapatillas_jugador == x.zapatillas_jugador && bikini_colaborador == x.bikini_colaborador && zapatillas_colaborador == x.zapatillas_colaborador )
       return true;
     else
       return false;
@@ -168,6 +168,15 @@ struct nodeN3{
   else 
     return false;
   }
+  /*bool operator<(const nodeN3 &n) const {
+    if (st.coste + st.h < n.st.coste + n.st.h){
+      return true;
+    }else if (st.coste + st.h == n.st.coste + n.st.h && st.coste < n.st.coste){
+      return true;
+    }else{
+      return false;
+    }
+  }*/
 };
 
 
