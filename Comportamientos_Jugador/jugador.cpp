@@ -1872,7 +1872,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 					{
 						c_stateN2.zapatillas=false;
 					}
-					plan = CosteUniforme2(c_stateN2,goal,mapaResultado);
+					plan = CosteUniforme(c_stateN2,goal,mapaResultado);
 					
 					break;
 				case 3:
