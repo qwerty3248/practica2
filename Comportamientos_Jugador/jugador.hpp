@@ -4,7 +4,7 @@
 #include "comportamientos/comportamiento.hpp"
 
 #include <list>
-#include<tuple>
+#include <tuple>
 
 
 struct stateN0{

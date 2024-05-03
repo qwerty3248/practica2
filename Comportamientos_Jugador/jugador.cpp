@@ -352,7 +352,6 @@ stateN1 applyN1(const Action & a, const stateN1 & st, const vector<vector<unsign
 					st_result.colaborador = sig_ubicacion;
 					st_result.ultimaOrdenColaborador = act_CLB_WALK;
 				}
-				st_result.ultimaOrdenColaborador = act_CLB_WALK;
 			//}
 		break;
 		case act_CLB_TURN_SR:
@@ -671,11 +670,44 @@ void ComportamientoJugador::VisualizaPlan(const ubicacion & jugador, const ubica
 		it++;
 	 }
 }
+list<nodeN2>::iterator esta (list <nodeN2> & l, const nodeN2 & n){
+	auto it = l.begin();
+	bool fin = false;
+	while(it != l.end() && !fin){
+		if((*it).st == n.st){
+			fin = true;
+		}else{
+			++it;
+		}	
+	}
+	return it;
+}
+void insertar (list<nodeN2> & l, nodeN2 & n){
+	auto it = l.begin();
+	bool encontrado = false;
+	auto fin = l.rbegin();
+	if((*fin).st.coste <= n.st.coste)
+		l.push_back(n);
+	else{
+		while(it != l.end() && !encontrado){
+			if((*it).st.coste >= n.st.coste){
+				encontrado = true;
+			}else{
+				++it;
+			}	
+		}
+		if(encontrado){
+			l.insert(it,n);
+		}else{
+			l.push_back(n);
+		}	
+	}
+} 
 
 stateN2 applyN2(const Action & a, const stateN2 & st, const vector<vector<unsigned char>> & mapa){
 	stateN2 st_result = st;
 	ubicacion sig_ubicacion,sig_ubicacion2;
-	char tipo = mapa[st.jugador.f][st.jugador.c];
+	char tipo = mapa[st.jugador.f][st.jugador.c];//donde está antes del movimiento
 	switch (a)
 	{
 	case actWALK:
@@ -905,30 +937,37 @@ list<Action> BFS(const stateN1 &inicio, const ubicacion &final, const vector<vec
 	list<nodeN1> frontier;
 	set<nodeN1> explored;
 	nodeN1 current_node;
-	Action acciones_cola []= {act_CLB_STOP,act_CLB_TURN_SR,act_CLB_WALK};
-	Action acciones_juga [] = {actIDLE,actRUN,actTURN_L,actTURN_SR,actWALK};
-	current_node.st = inicio;
+	Action acciones_cola [] = {act_CLB_STOP,act_CLB_TURN_SR,act_CLB_WALK};
+	Action acciones_juga [] = {actTURN_SR,actWALK,actRUN,actTURN_L,actIDLE};
+	current_node.st = inicio;//Estado inicial del problema
 	bool SolutionFound = (current_node.st.colaborador.f == final.f and current_node.st.colaborador.c == final.c);
 	
 	frontier.push_back(current_node);
-
+	
 	while (!frontier.empty() and !SolutionFound){
 		frontier.pop_front();
 		explored.insert(current_node);
+		//PintaPlan(current_node.secuencia);
+		/*if (current_node.secuencia == auxiliar){
+			cout << "El plan si sale\n";
+			sleep(2);
+		}*/
+		//sleep(1);
 		
 
 		nodeN1 colabor[3];
 		if (jugadorVeColaborador(current_node.st.jugador,current_node.st.colaborador)){
 			
-			for (int i = 0; i < 3 and !SolutionFound; i++){
+			for (int i = 0; i < 3  && !SolutionFound; i++){
 				colabor[i] = current_node;
 				colabor[i].st = applyN1(acciones_cola[i],current_node.st,mapa);
 				colabor[i].secuencia.push_back(acciones_cola[i]);
 				if (explored.find(colabor[i]) == explored.end()){
 					frontier.push_back(colabor[i]);
 				}else if (current_node.st.colaborador.f == final.f and current_node.st.colaborador.c == final.c){
-					SolutionFound = true;
 					current_node = colabor[i];
+					SolutionFound = true;
+					
 				}
 			}
 			
@@ -978,6 +1017,7 @@ list<Action> BFS(const stateN1 &inicio, const ubicacion &final, const vector<vec
 	}
 
 	if (SolutionFound){
+		//cout << SolutionFound<< endl;
 		plan = current_node.secuencia;
 		cout<< "Encontrado un plan: ";
 		PintaPlan(current_node.secuencia);
@@ -989,7 +1029,7 @@ list<Action> BFS(const stateN1 &inicio, const ubicacion &final, const vector<vec
 
 struct CompareCoste {
     bool operator()(const nodeN2& a, const nodeN2& b) const {
-        return a.st.coste > b.st.coste; 
+        return a.st.coste > b.st.coste; // Orden ascendente por coste
     }
 };
 list<Action> CosteUniforme(const stateN2 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa){
@@ -1019,7 +1059,7 @@ list<Action> CosteUniforme(const stateN2 &inicio, const ubicacion &final, const 
 			jugador[i].secuencia.push_back(acciones[i]);
 			if (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c){
 				SolutionFound = true;
-				current_node;
+				current_node = jugador[i];
 			}else if (explored.find(jugador[i]) == explored.end()){
 				frontier.push(jugador[i]);
 			}
@@ -1050,15 +1090,22 @@ int heuristica (const stateN3 & st, const char tipo_jugador, const char tipo_col
 
 	if (!(st.colaborador.f == final.f && st.colaborador.c == final.c)){
 		//Ahora es la chyby
-		if (!jugadorVeColaborador(st.jugador,st.colaborador)){//Si no lo ve se calcula la distancia proxima para llegar
+		/*if (!jugadorVeColaborador(st.jugador,st.colaborador)){//Si no lo ve se calcula la distancia proxima para llegar
 			int dfil = st.colaborador.f - st.jugador.f;
 			int dcol = st.colaborador.c - st.jugador.c;
+			//resultado = abs(dfil)+abs(dcol);
 			resultado = sqrt(dfil*dfil + dcol*dcol);
-		}else{
+			//resultado = max(abs(dfil),abs(dcol));
+		}else {
 			int dfil = final.f - st.colaborador.f;
 			int dcol = final.c - st.colaborador.c;
+			//resultado = abs(dfil)+abs(dcol);
 			resultado = sqrt(dfil*dfil + dcol*dcol);
-		}
+			//resultado = max(abs(dfil),abs(dcol));
+		}*/
+		int dfil = final.f - st.colaborador.f;
+		int dcol = final.c - st.colaborador.c;
+		resultado = sqrt(dfil*dfil + dcol*dcol);
 
 		
 
@@ -1109,12 +1156,12 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 
 			st_result.jugador = sig_ubicacion;
 
-			st_result.h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final,a);
+			//st_result.h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final,a);
 
 			//st_result.h = h.first + h.second;
 
 
-		} else return st;
+		}
 		break;
 	case actRUN:
 		sig_ubicacion = NextCasilla(st.jugador);
@@ -1177,15 +1224,15 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 
 				st_result.jugador = sig_ubicacion2;
 
-				st_result.h = heuristica(st_result,siguiente_tipo_jugador2,tipo_colaborador,final,a);
+				//st_result.h = heuristica(st_result,siguiente_tipo_jugador2,tipo_colaborador,final,a);
 
 				//st_result.h = h.first + h.second;
 
- 
-			} else return st;
+
+			}
 
 
-		}  else return st;
+		}
 		
 		
 		break;	
@@ -1265,9 +1312,7 @@ stateN3 applyN3(const Action & a, const stateN3 & st, const vector<vector<unsign
 			st_result.h = heuristica(st_result,tipo_jugador,siguiente_tipo_colaborador,final,a);
 			//st_result.h = h.first + h.second;
 			st_result.ultimaAccionColaborador = act_CLB_WALK;
-		}  else 
-			st_result.ultimaAccionColaborador = act_CLB_WALK;
-			return st;
+		}
 		break;	
 	case act_CLB_TURN_SR:
 		if (tipo_colaborador == 'A' ){
@@ -1373,6 +1418,42 @@ void ComportamientoJugador::EfectoLastAction(){
 			break;	
 	}
 }
+
+//Las mismas funciones que para el nivel 2 pero para el nivel 3 ya que sin estas funciones por ahora no me sale el nivel 3, lo encuentra pero sin el optimo
+list<nodeN3>::iterator esta(list <nodeN3> &l, const nodeN3 & n){
+	for (auto it = l.begin(); it != l.end(); ++it) {
+		if (it->st == n.st) {
+			return it;
+		}
+	}
+	return l.end();
+}
+void insertar(list<nodeN3> & l, nodeN3 & n){
+	auto it = l.begin();
+	bool encontrado = false;
+	auto fin = l.rbegin();
+	int coste_nuevo = n.st.coste + n.st.h;
+
+	if ((fin->st.coste + fin->st.h) <= coste_nuevo){
+		l.push_back(n);
+	}else{
+		while (it != l.end() && !encontrado){
+			if ((it->st.coste + it->st.h) >= coste_nuevo){
+				encontrado = true;
+			}else{
+				++it;
+			}
+		}
+		if (encontrado){
+			l.insert(it,n);
+
+		}else{
+			l.push_back(n);
+		}
+		
+	}
+
+}
 struct compare{
 	bool operator()(const nodeN3& a, const nodeN3& b) const
 	{
@@ -1380,22 +1461,22 @@ struct compare{
   	} 
 };
 list <Action> A(const stateN3 & inicio, const ubicacion & final, const vector<vector<unsigned char>> & mapa){
-	priority_queue <nodeN3, vector<nodeN3>, compare> frontier;
+	priority_queue <nodeN3, vector<nodeN3>, compare>frontier;
 	nodeN3 current_node;
 	set<nodeN3> explored;
 	list<Action> plan;
 	current_node.st = inicio;
 	Action accion_cola [] = {act_CLB_WALK,act_CLB_STOP,act_CLB_TURN_SR};
 	Action accion_juga [] = {actIDLE,actWALK,actTURN_L,actRUN,actTURN_SR};
-	frontier.push(current_node);
 	
+	frontier.push(current_node);
 
 	bool SolutionFound = (current_node.st.colaborador.f == final.f && current_node.st.colaborador.c == final.c);
 
 	while (!frontier.empty() and !SolutionFound){
 		frontier.pop();
 		explored.insert(current_node);
-		PintaPlan(current_node.secuencia);
+		//PintaPlan(current_node.secuencia);
 
 		//SolutionFound  = (current_node.st.colaborador.f == final.f && current_node.st.colaborador.c == final.c);
 
