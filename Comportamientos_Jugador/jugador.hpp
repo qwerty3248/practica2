@@ -165,7 +165,9 @@ struct nodeN3{
     return true;
   else if(st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.colaborador.f == n.st.colaborador.f && st.colaborador.c == n.st.colaborador.c && st.colaborador.brujula == n.st.colaborador.brujula && st.zapatillas_jugador == n.st.zapatillas_jugador && st.bikini_jugador == n.st.bikini_jugador && st.zapatillas_colaborador == n.st.zapatillas_colaborador && st.bikini_colaborador < n.st.bikini_colaborador)
     return true;
-  else 
+  else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula == n.st.jugador.brujula && st.colaborador.f == n.st.colaborador.f && st.colaborador.c == n.st.colaborador.c && st.colaborador.brujula == n.st.colaborador.brujula && st.zapatillas_jugador == n.st.zapatillas_jugador && st.bikini_jugador == n.st.bikini_jugador && st.zapatillas_colaborador == n.st.zapatillas_colaborador && st.bikini_colaborador == n.st.bikini_colaborador && st.ultimaAccionColaborador < n.st.ultimaAccionColaborador)
+    return true; 
+  else
     return false;
   }
   /*bool operator<(const nodeN3 &n) const {
