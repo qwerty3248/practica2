@@ -170,15 +170,7 @@ struct nodeN3{
   else
     return false;
   }
-  /*bool operator<(const nodeN3 &n) const {
-    if (st.coste + st.h < n.st.coste + n.st.h){
-      return true;
-    }else if (st.coste + st.h == n.st.coste + n.st.h && st.coste < n.st.coste){
-      return true;
-    }else{
-      return false;
-    }
-  }*/
+  
 };
 
 
