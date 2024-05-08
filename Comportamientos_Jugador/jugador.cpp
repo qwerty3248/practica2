@@ -1525,8 +1525,26 @@ int heuristica(const stateN3 &st, const ubicacion &final)
 	return resultado;
 }
 int heuriscisca(const stateN3 &st, const ubicacion &final)
-{
-	return 0;
+{	
+	
+	
+	
+	//return 0;
+	// Calcular la distancia entre el jugador y el colaborador
+	/*
+    int distancia_jugador_colaborador = abs(st.jugador.c - st.colaborador.c) + abs(st.jugador.f - st.colaborador.f);
+
+    // Si el jugador no puede ver al colaborador, aumentar significativamente el costo
+    if (!jugadorVeColaborador(st.jugador, st.colaborador)) {
+        distancia_jugador_colaborador *= distancia_jugador_colaborador; // Ajusta según la escala, antes += 2
+    }
+
+    // Calcular la distancia entre el colaborador y el objetivo
+    int distancia_colaborador_objetivo = abs(st.colaborador.c - final.c) + abs(st.colaborador.f - final.f);
+
+    // Devolver la suma de ambas distancias como heurística
+    return distancia_jugador_colaborador + distancia_colaborador_objetivo;*/
+	//return 0;
 	int fil, col;
 	fil = st.colaborador.f - st.jugador.f;
 	col = st.colaborador.c - st.jugador.c;
@@ -1570,6 +1588,13 @@ int heu(const stateN3 &st, const ubicacion &final)
 
 	return resultado;
 }
+int heuristica_33(const stateN3 &ubica, const ubicacion &final)
+{
+	int chyF,chyC;
+	chyF =  abs(final.f - ubica.colaborador.f);
+	chyC = abs(final.c - ubica.colaborador.c);
+	return (chyF > chyC) ?  chyF : chyC;
+}
 double heuristicas(const stateN3 &st, const ubicacion &final, const Action &a)
 {
 	double resultado = 0.0;
@@ -1584,6 +1609,8 @@ double heuristicas(const stateN3 &st, const ubicacion &final, const Action &a)
 
 	return resultado;
 }
+
+
 
 stateN3 applyN3(const Action &a, const stateN3 &st, const vector<vector<unsigned char>> &mapa, const ubicacion &final)
 {
@@ -1911,6 +1938,333 @@ stateN3 applyN3(const Action &a, const stateN3 &st, const vector<vector<unsigned
 
 	return st_result;
 }
+stateN3 applyN3_ubi(const Action &a, const stateN3 &st, const vector<vector<unsigned char>> &mapa, const ubicacion &final, const ubicacion &evitar)
+{
+	stateN3 st_result = st;
+	ubicacion sig_ubicacion, sig_ubicacion2;
+	char tipo_jugador = mapa[st.jugador.f][st.jugador.c]; // donde antes movimiento
+	char tipo_colaborador = mapa[st.colaborador.f][st.colaborador.c];
+	int h;
+
+	switch (a)
+	{
+	case actWALK:
+		sig_ubicacion = NextCasilla(st.jugador);
+		if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c) && !(sig_ubicacion.f == evitar.f && sig_ubicacion.f == evitar.c))
+		{
+			if (tipo_jugador == 'A')
+			{
+				if (!st.bikini_jugador)
+				{
+					st_result.coste += 100;
+				}
+				else
+				{
+					st_result.coste += 10;
+				}
+			}
+			else if (tipo_jugador == 'B')
+			{
+				if (!st.zapatillas_jugador)
+				{
+					st_result.coste += 50;
+				}
+				else
+				{
+					st_result.coste += 15;
+				}
+			}
+			else if (tipo_jugador == 'T')
+			{
+				st_result.coste += 2;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+			char siguiente_tipo_jugador = mapa[st_result.jugador.f][st_result.jugador.c];
+
+			if (siguiente_tipo_jugador == 'K')
+			{
+				st_result.bikini_jugador = true;
+				st_result.zapatillas_jugador = false;
+			}
+			else if (siguiente_tipo_jugador == 'D')
+			{
+				st_result.bikini_jugador = false;
+				st_result.zapatillas_jugador = true;
+			}
+
+			st_result.jugador = sig_ubicacion;
+			// int aux = st_result.colaborador.f - st_result.jugador.c , aux2 = st_result.colaborador.c - st_result.jugador.c;
+			// st_result.coste += sqrt(pow(aux,2)+pow(aux2,2));
+
+			// st_result.h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final,a);
+
+			// st_result.h = h.first + h.second;
+			st_result.h = heuriscisca(st_result, final);
+		}
+		else
+			return st;
+		break;
+	case actRUN:
+		sig_ubicacion = NextCasilla(st.jugador);
+		if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c)&& !(sig_ubicacion.f == evitar.f && sig_ubicacion.f == evitar.c))
+		{
+			/*
+			if (tipo_jugador == 'A'){
+				if (!st.bikini_jugador){
+					st_result.coste += 100;
+				}else{
+					st_result.coste +=10;
+				}
+			}else if (tipo_jugador == 'B'){
+				if (!st.zapatillas_jugador){
+					st_result.coste += 50;
+				}else{
+					st_result.coste +=15;
+				}
+			}else if (tipo_jugador == 'T'){
+				st_result.coste += 2;
+			}else {
+				st_result.coste += 1;
+			}*/
+			char siguiente_tipo_jugador = mapa[st.jugador.f][st.jugador.c];
+			/*
+			if (siguiente_tipo_jugador == 'K'){
+				st_result.bikini_jugador = true;
+				st_result.zapatillas_jugador = false;
+			}else if (siguiente_tipo_jugador == 'D'){
+				st_result.bikini_jugador = false;
+				st_result.zapatillas_jugador = true;
+			}*/
+			sig_ubicacion2 = NextCasilla(sig_ubicacion);
+			if (casillaTransitable(sig_ubicacion2, mapa) && !(sig_ubicacion2.f == st.colaborador.f && sig_ubicacion2.c == st.colaborador.c) && !(sig_ubicacion.f == evitar.f && sig_ubicacion.f == evitar.c))
+			{
+				if (siguiente_tipo_jugador == 'A')
+				{
+					if (!st_result.bikini_jugador)
+					{
+						st_result.coste += 150;
+					}
+					else
+					{
+						st_result.coste += 15;
+					}
+				}
+				else if (siguiente_tipo_jugador == 'B')
+				{
+					if (!st_result.zapatillas_jugador)
+					{
+						st_result.coste += 75;
+					}
+					else
+					{
+						st_result.coste += 25;
+					}
+				}
+				else if (siguiente_tipo_jugador == 'T')
+				{
+					st_result.coste += 3;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+				char siguiente_tipo_jugador2 = mapa[st_result.jugador.f][st_result.jugador.c];
+
+				if (siguiente_tipo_jugador2 == 'K')
+				{
+					st_result.bikini_jugador = true;
+					st_result.zapatillas_jugador = false;
+				}
+				else if (siguiente_tipo_jugador2 == 'D')
+				{
+					st_result.bikini_jugador = false;
+					st_result.zapatillas_jugador = true;
+				}
+
+				st_result.jugador = sig_ubicacion2;
+				// int aux = st_result.colaborador.f - st_result.jugador.c , aux2 = st_result.colaborador.c - st_result.jugador.c;
+				// st_result.coste += sqrt(pow(aux,2)+pow(aux2,2));
+
+				// st_result.h = heuristica(st_result,siguiente_tipo_jugador2,tipo_colaborador,final,a);
+
+				// st_result.h = h.first + h.second;
+				st_result.h = heuriscisca(st_result, final);
+			}
+			else
+				return st;
+		}
+		else
+			return st;
+
+		break;
+	case actIDLE:
+		// No se hace nada
+		break;
+
+	case actTURN_L: // completar las que quedan todavia
+		if (tipo_jugador == 'A')
+		{
+			if (!st.bikini_jugador)
+			{
+				st_result.coste += 30;
+			}
+			else
+			{
+				st_result.coste += 5;
+			}
+		}
+		else if (tipo_jugador == 'B')
+		{
+			if (!st.zapatillas_jugador)
+			{
+				st_result.coste += 7;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+		}
+		else if (tipo_jugador == 'T')
+		{
+			st_result.coste += 2;
+		}
+		else
+		{
+			st_result.coste += 1;
+		}
+		st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 6) % 8);
+		break;
+	case actTURN_SR:
+		if (tipo_jugador == 'A')
+		{
+			if (!st.bikini_jugador)
+			{
+				st_result.coste += 10;
+			}
+			else
+			{
+				st_result.coste += 2;
+			}
+		}
+		else if (tipo_jugador == 'B')
+		{
+			if (!st.zapatillas_jugador)
+			{
+				st_result.coste += 5;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+		}
+		else if (tipo_jugador == 'T')
+		{
+			st_result.coste += 1;
+		}
+		else
+		{
+			st_result.coste += 1;
+		}
+		st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 1) % 8);
+		break;
+	case act_CLB_WALK:
+		sig_ubicacion = NextCasilla(st.colaborador);
+		if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c))
+		{
+			if (tipo_colaborador == 'A')
+			{
+				if (!st.bikini_colaborador)
+				{
+					st_result.coste += 100;
+				}
+				else
+				{
+					st_result.coste += 10;
+				}
+			}
+			else if (tipo_colaborador == 'B')
+			{
+				if (!st.zapatillas_colaborador)
+				{
+					st_result.coste += 50;
+				}
+				else
+				{
+					st_result.coste += 15;
+				}
+			}
+			else if (tipo_colaborador == 'T')
+			{
+				st_result.coste += 2;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+			char siguiente_tipo_colaborador = mapa[st_result.colaborador.f][st_result.colaborador.c];
+			if (siguiente_tipo_colaborador == 'K')
+			{
+				st_result.bikini_colaborador = true;
+				st_result.zapatillas_colaborador = false;
+			}
+			else if (siguiente_tipo_colaborador == 'D')
+			{
+				st_result.zapatillas_colaborador = true;
+				st_result.bikini_colaborador = false;
+			}
+			st_result.colaborador = sig_ubicacion;
+			// int aux = final.f - st_result.colaborador.c, aux2 = final.c -st_result.colaborador.c;
+			// st_result.coste += sqrt(pow(aux,2)+pow(aux2,2));
+			// st_result.h = heuristica(st_result,tipo_jugador,siguiente_tipo_colaborador,final,a);
+			// st_result.h = h.first + h.second;
+			st_result.h = heuriscisca(st_result, final);
+			st_result.ultimaAccionColaborador = act_CLB_WALK;
+		}
+		else
+			return st;
+		break;
+	case act_CLB_TURN_SR:
+		if (tipo_colaborador == 'A')
+		{
+			if (!st.bikini_colaborador)
+			{
+				st_result.coste += 10;
+			}
+			else
+			{
+				st_result.coste += 2;
+			}
+		}
+		else if (tipo_colaborador == 'B')
+		{
+			if (!st.zapatillas_colaborador)
+			{
+				st_result.coste += 5;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+		}
+		else
+		{
+			st_result.coste += 1;
+		}
+		st_result.colaborador.brujula = static_cast<Orientacion>((st_result.colaborador.brujula + 1) % 8);
+		st_result.ultimaAccionColaborador = act_CLB_TURN_SR;
+		break;
+	case act_CLB_STOP:
+		// Aqui no se hace nada ?
+		st_result.ultimaAccionColaborador = act_CLB_STOP;
+		break;
+	}
+
+	return st_result;
+}
+
 
 // Como debo ordenar los elementos de forma creciente su f (h + coste) ? estructura aux ?
 
@@ -2053,7 +2407,16 @@ struct compare
 {
 	bool operator()(const nodeN3 &a, const nodeN3 &b) const
 	{
-		return a.st.coste + a.st.h > b.st.coste + b.st.h;
+		if ((a.st.coste + a.st.h) > (b.st.coste + b.st.h))
+		{
+			return true;
+		}else if ((a.st.coste + a.st.h) == (b.st.coste + b.st.h) && (a.secuencia.size() > b.secuencia.size()))
+		{	
+			return true;
+		}else
+		{
+			return false;
+		}
 	}
 };
 list<Action> A_Unico_for(const stateN3 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa)
@@ -2116,6 +2479,374 @@ list<Action> A_Unico_for(const stateN3 &inicio, const ubicacion &final, const ve
 
 	return plan;
 }
+
+
+stateN3 applyN32(const Action &a, const stateN3 &st, const vector<vector<unsigned char>> &mapa, const ubicacion &final)
+{
+	stateN3 st_result = st;
+	ubicacion sig_ubicacion, sig_ubicacion2;
+	char tipo_jugador = mapa[st.jugador.f][st.jugador.c]; // donde antes movimiento
+	char tipo_colaborador = mapa[st.colaborador.f][st.colaborador.c];
+	int h;
+	bool entrada;
+
+	switch (a)
+	{
+		case actWALK:
+			sig_ubicacion = NextCasilla(st.jugador);
+			entrada = true;
+			if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c))
+			{
+				if (tipo_jugador == 'A')
+				{
+					if (!st.bikini_jugador)
+					{
+						st_result.coste += 100;
+					}
+					else
+					{
+						st_result.coste += 10;
+					}
+				}
+				else if (tipo_jugador == 'B')
+				{
+					if (!st.zapatillas_jugador)
+					{
+						st_result.coste += 50;
+					}
+					else
+					{
+						st_result.coste += 15;
+					}
+				}
+				else if (tipo_jugador == 'T')
+				{
+					st_result.coste += 2;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+				
+
+				st_result.jugador = sig_ubicacion;
+				// int aux = st_result.colaborador.f - st_result.jugador.c , aux2 = st_result.colaborador.c - st_result.jugador.c;
+				// st_result.coste += sqrt(pow(aux,2)+pow(aux2,2));
+
+				// st_result.h = heuristica(st_result,siguiente_tipo_jugador,tipo_colaborador,final,a);
+
+				// st_result.h = h.first + h.second;
+				//st_result.h = heuriscisca(st_result, final);
+			}
+			else
+				return st;
+			break;
+		case actRUN:
+			sig_ubicacion = NextCasilla(st.jugador);
+			entrada = true;
+			if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.colaborador.f && sig_ubicacion.c == st.colaborador.c))
+			{
+				
+				char siguiente_tipo_jugador = mapa[st.jugador.f][st.jugador.c];
+				
+				sig_ubicacion2 = NextCasilla(sig_ubicacion);
+				if (casillaTransitable(sig_ubicacion2, mapa) && !(sig_ubicacion2.f == st.colaborador.f && sig_ubicacion2.c == st.colaborador.c))
+				{
+					if (siguiente_tipo_jugador == 'A')
+					{
+						if (!st_result.bikini_jugador)
+						{
+							st_result.coste += 150;
+						}
+						else
+						{
+							st_result.coste += 15;
+						}
+					}
+					else if (siguiente_tipo_jugador == 'B')
+					{
+						if (!st_result.zapatillas_jugador)
+						{
+							st_result.coste += 75;
+						}
+						else
+						{
+							st_result.coste += 25;
+						}
+					}
+					else if (siguiente_tipo_jugador == 'T')
+					{
+						st_result.coste += 3;
+					}
+					else
+					{
+						st_result.coste += 1;
+					}
+					char siguiente_tipo_jugador2 = mapa[st_result.jugador.f][st_result.jugador.c];
+					
+					st_result.jugador = sig_ubicacion2;
+				
+				}
+				else
+					return st;
+			}
+			else
+				return st;
+
+			break;
+
+		case actTURN_L: // completar las que quedan todavia
+			entrada = true;
+			if (tipo_jugador == 'A')
+			{
+				if (!st.bikini_jugador)
+				{
+					st_result.coste += 30;
+				}
+				else
+				{
+					st_result.coste += 5;
+				}
+			}
+			else if (tipo_jugador == 'B')
+			{
+				if (!st.zapatillas_jugador)
+				{
+					st_result.coste += 7;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+			}
+			else if (tipo_jugador == 'T')
+			{
+				st_result.coste += 2;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+			st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 6) % 8);
+			break;
+		case actTURN_SR:
+			entrada = true;
+			if (tipo_jugador == 'A')
+			{
+				if (!st.bikini_jugador)
+				{
+					st_result.coste += 10;
+				}
+				else
+				{
+					st_result.coste += 2;
+				}
+			}
+			else if (tipo_jugador == 'B')
+			{
+				if (!st.zapatillas_jugador)
+				{
+					st_result.coste += 5;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+			}
+			else if (tipo_jugador == 'T')
+			{
+				st_result.coste += 1;
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+			st_result.jugador.brujula = static_cast<Orientacion>((st_result.jugador.brujula + 1) % 8);
+			break;
+		case act_CLB_WALK:
+			entrada = false;
+			sig_ubicacion = NextCasilla(st.colaborador);
+			if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c))
+			{
+				if (tipo_colaborador == 'A')
+				{
+					if (!st.bikini_colaborador)
+					{
+						st_result.coste += 100;
+					}
+					else
+					{
+						st_result.coste += 10;
+					}
+				}
+				else if (tipo_colaborador == 'B')
+				{
+					if (!st.zapatillas_colaborador)
+					{
+						st_result.coste += 50;
+					}
+					else
+					{
+						st_result.coste += 15;
+					}
+				}
+				else if (tipo_colaborador == 'T')
+				{
+					st_result.coste += 2;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+				char siguiente_tipo_colaborador = mapa[st_result.colaborador.f][st_result.colaborador.c];
+				
+				st_result.colaborador = sig_ubicacion;
+				// int aux = final.f - st_result.colaborador.c, aux2 = final.c -st_result.colaborador.c;
+				// st_result.coste += sqrt(pow(aux,2)+pow(aux2,2));
+				// st_result.h = heuristica(st_result,tipo_jugador,siguiente_tipo_colaborador,final,a);
+				// st_result.h = h.first + h.second;
+				//st_result.h = heuriscisca(st_result, final);
+				
+			}
+			st_result.ultimaAccionColaborador = act_CLB_WALK;
+			
+			break;
+		case act_CLB_TURN_SR:
+			entrada = false;
+			if (tipo_colaborador == 'A')
+			{
+				if (!st.bikini_colaborador)
+				{
+					st_result.coste += 10;
+				}
+				else
+				{
+					st_result.coste += 2;
+				}
+			}
+			else if (tipo_colaborador == 'B')
+			{
+				if (!st.zapatillas_colaborador)
+				{
+					st_result.coste += 5;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+			st_result.colaborador.brujula = static_cast<Orientacion>((st_result.colaborador.brujula + 1) % 8);
+			st_result.ultimaAccionColaborador = act_CLB_TURN_SR;
+			break;
+		case act_CLB_STOP:
+			entrada = false;
+			st_result.ultimaAccionColaborador = act_CLB_STOP;
+			break;
+		}
+
+	if (entrada)
+	{	
+		switch (st_result.ultimaAccionColaborador)
+		{
+			case act_CLB_WALK:
+				sig_ubicacion = NextCasilla(st.colaborador);
+			if (casillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c))
+			{
+				if (tipo_colaborador == 'A')
+				{
+					if (!st.bikini_colaborador)
+					{
+						st_result.coste += 100;
+					}
+					else
+					{
+						st_result.coste += 10;
+					}
+				}
+				else if (tipo_colaborador == 'B')
+				{
+					if (!st.zapatillas_colaborador)
+					{
+						st_result.coste += 50;
+					}
+					else
+					{
+						st_result.coste += 15;
+					}
+				}
+				else if (tipo_colaborador == 'T')
+				{
+					st_result.coste += 2;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+				break;
+			}	
+			case act_CLB_TURN_SR:
+				if (tipo_colaborador == 'A')
+			{
+				if (!st.bikini_colaborador)
+				{
+					st_result.coste += 10;
+				}
+				else
+				{
+					st_result.coste += 2;
+				}
+			}
+			else if (tipo_colaborador == 'B')
+			{
+				if (!st.zapatillas_colaborador)
+				{
+					st_result.coste += 5;
+				}
+				else
+				{
+					st_result.coste += 1;
+				}
+			}
+			else
+			{
+				st_result.coste += 1;
+			}
+			st_result.colaborador.brujula = static_cast<Orientacion>((st_result.colaborador.brujula + 1) % 8);
+				break;
+			case act_CLB_STOP:
+				break;
+
+		}
+	}
+	if (mapa[st_result.colaborador.f][st_result.colaborador.c] == 'K')
+	{
+		st_result.bikini_colaborador = true;
+		st_result.zapatillas_colaborador = false;
+	}
+	else if (mapa[st_result.colaborador.f][st_result.colaborador.c] == 'D')
+	{
+		st_result.zapatillas_colaborador = true;
+		st_result.bikini_colaborador = false;
+	}
+
+	if (mapa[st_result.jugador.f][st_result.jugador.c] == 'K')
+	{
+		st_result.zapatillas_jugador = false;
+		st_result.bikini_jugador = true;
+	}
+	else if (mapa[st_result.jugador.f][st_result.jugador.c] == 'D')
+	{
+		st_result.zapatillas_jugador = true;
+		st_result.bikini_jugador = false;
+	}
+
+	return st_result;
+	
+}
 list<Action> A2(const stateN3 &inicio, const ubicacion &final, const vector<vector<unsigned char>> &mapa)
 {
 	priority_queue<nodeN3, vector<nodeN3>, compare> frontier;
@@ -2127,105 +2858,108 @@ list<Action> A2(const stateN3 &inicio, const ubicacion &final, const vector<vect
 	Action accion_juga[] = {actIDLE, actWALK, actTURN_L, actRUN, actTURN_SR};
 	bool valido;
 	frontier.push(current_node);
+	int old_coste = 0;
 
 	bool SolutionFound = (current_node.st.colaborador.f == final.f && current_node.st.colaborador.c == final.c);
-	int max_iterations = 7000000; // Número máximo de iteraciones
-	int iterations = 0;
 
-	while (!frontier.empty() && !SolutionFound && iterations < max_iterations)
+	while (!frontier.empty() and !SolutionFound)
 	{
-		current_node = frontier.top();
 		frontier.pop();
 
 		explored.insert(current_node);
 		valido = true;
+		// PintaPlan(current_node.secuencia);
+		if (current_node.st.coste > old_coste)
+		{
+			//cout << "coste: " << current_node.st.coste << endl;
+			old_coste = current_node.st.coste;
+		}
 
 		if (jugadorVeColaborador(current_node.st.jugador, current_node.st.colaborador))
 		{
 			nodeN3 child_cola[3];
-			for (int i = 0; i < 3 && !SolutionFound; i++)
+			for (int i = 0; i < 3; i++)
 			{
-				child_cola[i] = current_node;
-				child_cola[i].st = applyN3(accion_cola[i], current_node.st, mapa, final);
-				child_cola[i].st.h = heuriscisca(child_cola[i].st, final);
-				child_cola[i].secuencia.push_back(accion_cola[i]);
-				if (explored.find(child_cola[i]) == explored.end())
+				if (current_node.st.ultimaAccionColaborador != accion_cola[i])
 				{
-					frontier.push(child_cola[i]);
-					if (child_cola[i].st.colaborador.f == final.f && child_cola[i].st.colaborador.c == final.c)
-					{
-						current_node = child_cola[i];
-						SolutionFound = true;
+					child_cola[i] = current_node;
+					child_cola[i].st = applyN32(accion_cola[i], current_node.st, mapa, final);
+					child_cola[i].secuencia.push_back(accion_cola[i]);
+					child_cola[i].st.h = heuristica_33(child_cola[i].st,final);
+					child_cola[i].st.ultimaAccionColaborador = accion_cola[i];
+					if (!(child_cola[i].st == current_node.st)){
+						if (explored.find(child_cola[i]) == explored.end())
+						{
+							frontier.push(child_cola[i]);
+						}
 					}
 				}
 			}
 		}
-
-		if (current_node.st.ultimaAccionColaborador == act_CLB_WALK)
-		{
-			nodeN3 child_node_walk = current_node;
-			child_node_walk.st = applyN3(act_CLB_WALK, child_node_walk.st, mapa, final);
-			if (child_node_walk.st.colaborador.f == final.f && child_node_walk.st.colaborador.c == final.c)
-			{
-				current_node = child_node_walk;
-				SolutionFound = true;
-			}
-
-			if (!(child_node_walk == current_node))
-			{
-				current_node = child_node_walk;
-			}
-			else
-			{
-				valido = false;
-			}
-		}
-		else if (current_node.st.ultimaAccionColaborador == act_CLB_TURN_SR)
-		{
-			nodeN3 child_node_turn = current_node;
-			child_node_turn.st = applyN3(act_CLB_TURN_SR, child_node_turn.st, mapa, final);
-			if (!(child_node_turn == current_node))
-			{
-				current_node = child_node_turn;
-			}
-			else
-			{
-				valido = false;
-			}
-		}
-		else if (current_node.st.ultimaAccionColaborador == act_CLB_STOP)
-		{
-			nodeN3 child_node_stop = current_node;
-			child_node_stop.st = applyN3(act_CLB_STOP, child_node_stop.st, mapa, final);
-			if (!(child_node_stop == current_node))
-			{
-				current_node = child_node_stop;
-			}
-		}
-
+		
 		nodeN3 child_juan[5];
-		for (int i = 0; i < 5 && !SolutionFound && valido; i++)
-		{
-			child_juan[i] = current_node;
-			child_juan[i].st = applyN3(accion_juga[i], current_node.st, mapa, final);
-			child_juan[i].st.h = heuriscisca(child_juan[i].st, final);
-			child_juan[i].secuencia.push_back(accion_juga[i]);
-			if (explored.find(child_juan[i]) == explored.end())
+		for (int i = 0; i < 5; i++)
+		{	
+
+			if (i == 0)
 			{
-				frontier.push(child_juan[i]);
+				if (current_node.st.ultimaAccionColaborador != accion_cola[1])
+				{
+					child_juan[i] = current_node;
+					child_juan[i].st = applyN32(accion_juga[i], current_node.st, mapa, final);
+					child_juan[i].secuencia.push_back(accion_juga[i]);
+					child_juan[i].st.h = heuristica_33(child_juan[i].st,final);
+					if (!(child_juan[i].st == current_node.st))
+					{
+						if (explored.find(child_juan[i]) == explored.end())
+						{
+							frontier.push(child_juan[i]);
+						}
+					}
+				}
+			}
+			else
+			{
+				child_juan[i] = current_node;
+				child_juan[i].st = applyN32(accion_juga[i], current_node.st, mapa, final);
+				child_juan[i].secuencia.push_back(accion_juga[i]);
+				child_juan[i].st.h = heuristica_33(child_juan[i].st,final);
+				if (!(child_juan[i].st == current_node.st))
+				{
+					if (explored.find(child_juan[i]) == explored.end())
+					{
+						frontier.push(child_juan[i]);
+					}
+				}
+			}
+			
+		}
+
+		if (!frontier.empty())
+		{
+			current_node = frontier.top();
+			while (!frontier.empty() and explored.find(current_node) != explored.end())
+			{
+				frontier.pop();
+				if (!frontier.empty())
+				{
+					current_node = frontier.top();
+				}
 			}
 		}
 
-		iterations++;
+		if (current_node.st.colaborador.f == final.f && current_node.st.colaborador.c == final.c)
+		{
+			SolutionFound = true;
+			//cout << "Encontre sol\n";
+		}
 	}
-
 	if (SolutionFound)
 	{
 		plan = current_node.secuencia;
-		cout << "Encontrado un plan: ";
+		cout << old_coste<<" "<<"Encontrado un plan: ";
 		PintaPlan(current_node.secuencia);
 	}
-
 	return plan;
 }
 
@@ -2279,7 +3013,7 @@ list<Action> A(const stateN3 &inicio, const ubicacion &final, const vector<vecto
 				}
 			}
 		}
-
+		
 		if (current_node.st.ultimaAccionColaborador == act_CLB_WALK)
 		{
 			nodeN3 child_node_walk = current_node;
@@ -2305,12 +3039,14 @@ list<Action> A(const stateN3 &inicio, const ubicacion &final, const vector<vecto
 			child_node_turn.st = applyN3(act_CLB_TURN_SR, child_node_turn.st, mapa, final);
 			current_node = child_node_turn;
 		}
+		ubicacion evito;
+		evito = current_node.st.colaborador;
 
 		nodeN3 child_juan[5];
 		for (int i = 0; i < 5; i++)
 		{
 			child_juan[i] = current_node;
-			child_juan[i].st = applyN3(accion_juga[i], current_node.st, mapa, final);
+			child_juan[i].st = applyN3_ubi(accion_juga[i], current_node.st, mapa, final,evito);
 			// child_juan[i].st.h = heuriscisca(child_juan[i].st,final);
 			child_juan[i].secuencia.push_back(accion_juga[i]);
 			if (!(child_juan[i].st == current_node.st))
@@ -2770,6 +3506,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 				c_stateN3.colaborador = ubicacion_cola;
 				c_stateN3.coste = 0;
 				int h_ini = heuriscisca(c_stateN3, goal);
+				//h_ini = heuristica_33(c_stateN3,goal);
 				c_stateN3.h = h_ini;
 				if (tipo_juga == 'K')
 				{
